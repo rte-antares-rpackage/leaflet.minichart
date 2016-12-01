@@ -21,7 +21,8 @@
       opacity: 1,
       label: false,
       labelStyle: "fill:white;font-size:8px;",
-      labelPrecision: 0
+      labelPrecision: 0,
+      transitionTime: 750
     },
 
     initialize: function(center, options) {
@@ -120,7 +121,7 @@
       this._chart
         .attr("transform", "translate(" + (c.x - this.options.width / 2) + "," + (c.y) + ")")
         .transition()
-        .duration(750)
+        .duration(this.options.transitionTime)
         .attr("opacity", this.options.opacity);
 
       // Display/ update data
@@ -134,7 +135,7 @@
         .attr("width", 0)
         .merge(bar)
         .transition()
-        .duration(750)
+        .duration(this.options.transitionTime)
         .attr("width", barWidth)
         .attr("x", function(d, i) {return i * barWidth})
         .attr("y", function(d) {return d >= 0? -scale(d) : 0;})
@@ -143,7 +144,7 @@
 
       bar.exit()
         .transition()
-        .duration(750)
+        .duration(this.options.transitionTime)
         .attr("x", function(d, i) {return i * barWidth})
         .attr("y", 0)
         .attr("width", 0)
@@ -165,7 +166,7 @@
           .attr("style", this.options.labelStyle)
           .merge(labels)
           .transition()
-          .duration(750)
+          .duration(this.options.transitionTime)
           .attr("alignment-baseline", function(d) {return d > 0? "before-edge": "after-edge"})
           .text(function(d, i) {return roundLabels(self.options.data[i], self.options.labelPrecision)})
           .attr("opacity", 1)
@@ -182,7 +183,7 @@
       // Set Position of the container
       this._chart.attr("transform", "translate(" + c.x + "," + c.y + ")")
         .transition()
-        .duration(750)
+        .duration(this.options.transitionTime)
         .attr("opacity", this.options.opacity);
 
       // Draw polar area chart
@@ -212,7 +213,7 @@
         .each(function(d) {console.log(d); this._current = {startAngle:d.endAngle, endAngle:d.endAngle}})
         .merge(slices)
         .transition()
-        .duration(750)
+        .duration(this.options.transitionTime)
         .attrTween("d", arcTween)
         .attr("fill", function(d, i) {return color(i)})
 
@@ -244,7 +245,7 @@
           .merge(labels)
           .text(function(d, i) {return roundLabels(self.options.data[i], self.options.labelPrecision)})
           .transition()
-          .duration(750)
+          .duration(this.options.transitionTime)
           .attr("opacity", 1)
           .attr("transform", function(d) {
             if (data.length == 1) return "translate(0, 0)"
