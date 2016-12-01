@@ -5,17 +5,23 @@
     return x;
   }
 
+  function roundLabels(x, precision) {
+    if (precision == 0) return x
+    else return x.toPrecision(precision);
+  }
+
   L.D3chart = L.CircleMarker.extend({
     options: {
       type: "bar",
       data: [1],
       maxValues: [1],
       colors: d3.schemeCategory10,
-      width: 40,
-      height: 40,
+      width: 60,
+      height: 60,
       opacity: 1,
       label: false,
-      labelStyle: "fill:white;font-size:8px;"
+      labelStyle: "fill:white;font-size:8px;",
+      labelPrecision: 0
     },
 
     initialize: function(center, options) {
@@ -83,10 +89,10 @@
           this._drawPolar(c, dataScaled, "angle");
           break;
         case "polar-radius":
-          this.drawPolar(c, dataScaled, "radius");
+          this._drawPolar(c, dataScaled, "radius");
           break;
         case "polar-area":
-          this.drawPolar(c, dataScaled, "area");
+          this._drawPolar(c, dataScaled, "area");
           break;
       }
     },
@@ -160,7 +166,7 @@
           .transition()
           .duration(750)
           .attr("alignment-baseline", function(d) {return d > 0? "before-edge": "after-edge"})
-          .text(function(d, i) {return self.options.data[i]})
+          .text(function(d, i) {return roundLabels(self.options.data[i], self.options.labelPrecision)})
           .attr("opacity", 1)
           .attr("x", function(d, i) {return (i + 0.5) * barWidth})
           .attr("y", function(d) {return -scale(d)})
