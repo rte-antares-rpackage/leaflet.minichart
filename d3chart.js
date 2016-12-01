@@ -171,6 +171,8 @@
           .attr("opacity", 1)
           .attr("x", function(d, i) {return (i + 0.5) * barWidth})
           .attr("y", function(d) {return -scale(d)})
+
+        labels.exit().remove();
       } else {
         this._chart.selectAll("text").remove();
       }
@@ -201,7 +203,6 @@
       var color = d3.scaleOrdinal(this.options.colors);
 
       // redraw the polar chart
-      console.log(pie(data))
       var slices = this._chart.selectAll("path").data(pie(data));
       slices.enter()
         .append("path")
@@ -223,6 +224,37 @@
         return function(t) {
           return arc(i(t));
         };
+      }
+
+      // Add labels if necessary
+      if (this.options.label) {
+        var self = this;
+        var labels = this._chart.selectAll("text").data(pie(data));
+
+        labels.enter()
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("alignment-baseline", "middle")
+          .attr("opacity", 0)
+          .attr("transform", function(d) {
+            if (data.length == 1) return "translate(0, 0)"
+            else return "translate(" + arc.centroid(d) + ")"
+          })
+          .attr("style", this.options.labelStyle)
+          .merge(labels)
+          .text(function(d, i) {return roundLabels(self.options.data[i], self.options.labelPrecision)})
+          .transition()
+          .duration(750)
+          .attr("opacity", 1)
+          .attr("transform", function(d) {
+            if (data.length == 1) return "translate(0, 0)"
+            else return "translate(" + arc.centroid(d) + ")"
+          })
+
+        labels.exit().remove();
+
+      } else {
+        this._chart.selectAll("text").remove();
       }
     }
   });
