@@ -210,7 +210,10 @@
         .attr("class", "leaflet-clickable")
         .attr("d", arc)
         .attr("fill", function(d, i) {return color(i)})
-        .each(function(d) {console.log(d); this._current = {startAngle:d.endAngle, endAngle:d.endAngle}})
+        .each(function(d) {
+          if (data.length == 1) this._current = {startAngle:d.startAngle, endAngle:d.endAngle, data:0}
+          else this._current = {startAngle:d.endAngle, endAngle:d.endAngle}
+        })
         .merge(slices)
         .transition()
         .duration(this.options.transitionTime)
