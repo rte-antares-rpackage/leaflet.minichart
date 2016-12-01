@@ -6,8 +6,13 @@
   }
 
   function roundLabels(x, precision) {
-    if (precision == 0) return x
-    else return x.toPrecision(precision);
+    x = toArray(x);
+    var res = [];
+    for (var i = 0; i < x.length; i++) {
+      if (precision == 0) res.push(x[i]);
+      else res.push(x[i].toPrecision(precision));
+    }
+    return res;
   }
 
   L.D3chart = L.CircleMarker.extend({
@@ -19,9 +24,10 @@
       width: 60,
       height: 60,
       opacity: 1,
-      label: false,
+      showLabels: false,
       labelStyle: "fill:white;font-size:8px;",
       labelPrecision: 0,
+      labelText: null,
       transitionTime: 750
     },
 
@@ -82,23 +88,35 @@
         dataScaled.push(data[i] / max[i % max.length]);
       }
 
+      // Prepare labels
+      if (!this.options.showLabels) {
+        var labels = null;
+      } else if (this.options.labelText == null) {
+        var labels = roundLabels(data, this.options.labelPrecision)
+      } else {
+        var labels = this.options.labelText;
+        if (labels.length != data.length) {
+          throw new Error("Custom labels must have same length as data")
+        }
+      }
+
       switch(this.options.type) {
         case "bar":
-          this._drawBar(c, dataScaled, newChart);
+          this._drawBar(c, dataScaled, newChart, labels);
           break;
         case "pie":
-          this._drawPolar(c, dataScaled, "angle");
+          this._drawPolar(c, dataScaled, "angle", labels);
           break;
         case "polar-radius":
-          this._drawPolar(c, dataScaled, "radius");
+          this._drawPolar(c, dataScaled, "radius", labels);
           break;
         case "polar-area":
-          this._drawPolar(c, dataScaled, "area");
+          this._drawPolar(c, dataScaled, "area", labels);
           break;
       }
     },
 
-    _drawBar: function(c, data, newChart) {
+    _drawBar: function(c, data, newChart, labels) {
       if (newChart) {
         // Draw a gray line that represent the 0
         this._chart.append("line")
@@ -152,11 +170,10 @@
         .remove();
 
       // labels
-      if (this.options.label) {
-        var self = this;
-        var labels = this._chart.selectAll("text").data(data);
+      if (labels) {
+        var labelsEl = this._chart.selectAll("text").data(data);
 
-        labels.enter()
+        labelsEl.enter()
           .append("text")
           .attr("text-anchor", "middle")
           .attr("alignment-baseline", function(d) {return d > 0? "before-edge": "after-edge"})
@@ -164,22 +181,22 @@
           .attr("x", function(d, i) {return (i + 0.5) * barWidth})
           .attr("y", function(d) {return -scale(d)})
           .attr("style", this.options.labelStyle)
-          .merge(labels)
+          .merge(labelsEl)
           .transition()
           .duration(this.options.transitionTime)
           .attr("alignment-baseline", function(d) {return d > 0? "before-edge": "after-edge"})
-          .text(function(d, i) {return roundLabels(self.options.data[i], self.options.labelPrecision)})
+          .text(function(d, i) {return labels[i]})
           .attr("opacity", 1)
           .attr("x", function(d, i) {return (i + 0.5) * barWidth})
           .attr("y", function(d) {return -scale(d)})
 
-        labels.exit().remove();
+        labelsEl.exit().remove();
       } else {
         this._chart.selectAll("text").remove();
       }
     },
 
-    _drawPolar: function(c, data, type) {
+    _drawPolar: function(c, data, type, labels) {
       // Set Position of the container
       this._chart.attr("transform", "translate(" + c.x + "," + c.y + ")")
         .transition()
@@ -231,11 +248,10 @@
       }
 
       // Add labels if necessary
-      if (this.options.label) {
-        var self = this;
-        var labels = this._chart.selectAll("text").data(pie(data));
+      if (labels) {
+        var labelsEl = this._chart.selectAll("text").data(pie(data));
 
-        labels.enter()
+        labelsEl.enter()
           .append("text")
           .attr("text-anchor", "middle")
           .attr("alignment-baseline", "middle")
@@ -245,8 +261,8 @@
             else return "translate(" + arc.centroid(d) + ")"
           })
           .attr("style", this.options.labelStyle)
-          .merge(labels)
-          .text(function(d, i) {return roundLabels(self.options.data[i], self.options.labelPrecision)})
+          .merge(labelsEl)
+          .text(function(d, i) {return labels[i]})
           .transition()
           .duration(this.options.transitionTime)
           .attr("opacity", 1)
@@ -255,7 +271,7 @@
             else return "translate(" + arc.centroid(d) + ")"
           })
 
-        labels.exit().remove();
+        labelsEl.exit().remove();
 
       } else {
         this._chart.selectAll("text").remove();
