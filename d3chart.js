@@ -128,6 +128,7 @@
 
       bar.enter()
         .append("rect")
+        .attr("class", "leaflet-clickable")
         .attr("x", function(d, i) {return (i + 1) * barWidth})
         .attr("y", function(d) {return 0})
         .attr("width", 0)
@@ -172,6 +173,56 @@
           .attr("y", function(d) {return -scale(d)})
       } else {
         this._chart.selectAll("text").remove();
+      }
+    },
+
+    _drawPolar: function(c, data, type) {
+      // Set Position of the container
+      this._chart.attr("transform", "translate(" + c.x + "," + c.y + ")")
+        .transition()
+        .duration(750)
+        .attr("opacity", this.options.opacity);
+
+      // Draw polar area chart
+      var radius = this.options.width / 2;
+      var pie = d3.pie().sort(null);
+      var arc = d3.arc().innerRadius(0);
+
+      if (type == "angle") {
+        pie.value(function(d) {return d});
+        arc.outerRadius(function(d) {return radius});
+      } else {
+        var scale = type == "radius" ? d3.scaleLinear() : d3.scalePow().exponent(0.5);
+        scale.range([0, radius]);
+        pie.value(function(d) {return 1});
+        arc.outerRadius(function(d, i) {return scale(d.data)});
+      }
+
+      var color = d3.scaleOrdinal(this.options.colors);
+
+      // redraw the polar chart
+      console.log(pie(data))
+      var slices = this._chart.selectAll("path").data(pie(data));
+      slices.enter()
+        .append("path")
+        .attr("class", "leaflet-clickable")
+        .attr("d", arc)
+        .attr("fill", function(d, i) {return color(i)})
+        .each(function(d) {console.log(d); this._current = {startAngle:d.endAngle, endAngle:d.endAngle}})
+        .merge(slices)
+        .transition()
+        .duration(750)
+        .attrTween("d", arcTween)
+        .attr("fill", function(d, i) {return color(i)})
+
+      slices.exit().remove();
+
+      function arcTween(a) {
+        var i = d3.interpolate(this._current, a);
+        this._current = i(0);
+        return function(t) {
+          return arc(i(t));
+        };
       }
     }
   });
