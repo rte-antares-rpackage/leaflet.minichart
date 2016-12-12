@@ -25,8 +25,9 @@
       height: 60,
       opacity: 1,
       showLabels: false,
-      labelStyle: "fill:white;font-size:8px;",
+      labelStyle: "font-size:8px;",
       labelPrecision: 0,
+      labelColor: "auto",
       labelText: null,
       transitionTime: 750
     },
@@ -171,6 +172,16 @@
 
       // labels
       if (labels) {
+        // color labels
+        var labelColor;
+        if (this.options.labelColor == "auto") {
+          labelColor = function(d, i) {
+            return tinycolor.mostReadable(color(i), ["white", "black"])._originalInput
+          }
+        } else {
+          labelColor = this.options.labelColor;
+        }
+
         var labelsEl = this._chart.selectAll("text").data(data);
 
         labelsEl.enter()
@@ -181,6 +192,7 @@
           .attr("x", function(d, i) {return (i + 0.5) * barWidth})
           .attr("y", function(d) {return -scale(d)})
           .attr("style", this.options.labelStyle)
+          .attr("fill", labelColor)
           .merge(labelsEl)
           .transition()
           .duration(this.options.transitionTime)
@@ -189,6 +201,7 @@
           .attr("opacity", 1)
           .attr("x", function(d, i) {return (i + 0.5) * barWidth})
           .attr("y", function(d) {return -scale(d)})
+          .attr("fill", labelColor)
 
         labelsEl.exit().remove();
       } else {
@@ -249,6 +262,15 @@
 
       // Add labels if necessary
       if (labels) {
+        // Label colors
+        if (this.options.labelColor == "auto") {
+          labelColor = function(d, i) {
+            return tinycolor.mostReadable(color(i), ["white", "black"])._originalInput
+          }
+        } else {
+          labelColor = this.options.labelColor;
+        }
+
         var labelsEl = this._chart.selectAll("text").data(pie(data));
 
         labelsEl.enter()
@@ -261,11 +283,13 @@
             else return "translate(" + arc.centroid(d) + ")"
           })
           .attr("style", this.options.labelStyle)
+          .attr("fill", labelColor)
           .merge(labelsEl)
           .text(function(d, i) {return labels[i]})
           .transition()
           .duration(this.options.transitionTime)
           .attr("opacity", 1)
+          .attr("fill", labelColor)
           .attr("transform", function(d) {
             if (data.length == 1) return "translate(0, 0)"
             else return "translate(" + arc.centroid(d) + ")"
