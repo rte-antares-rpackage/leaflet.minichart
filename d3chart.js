@@ -25,7 +25,10 @@
       height: 60,
       opacity: 1,
       showLabels: false,
-      labelStyle: "font-size:8px;",
+      labelStyle: "font-family:sans-serif",
+      labelMinSize: 8,
+      labelMaxSize: 24,
+      labelPadding: 2,
       labelPrecision: 0,
       labelColor: "auto",
       labelText: null,
@@ -68,7 +71,7 @@
 
     _reset: function(newChart) {
       // If necessary remove all elements of the previous chart
-      if (newChart) {
+      if (newChart === true) {
         this._chart.selectAll("*").remove();
       }
 
@@ -181,27 +184,51 @@
         } else {
           labelColor = this.options.labelColor;
         }
+        // min and max size
+        var minSize = this.options.labelMinSize;
+        var maxSize = this.options.labelMaxSize;
+        var padding = this.options.labelPadding;
 
         var labelsEl = this._chart.selectAll("text").data(data);
 
         labelsEl.enter()
           .append("text")
           .attr("text-anchor", "middle")
-          .attr("dy", function(d) {return d > 0? "1em": "-0.35em"})
+          .attr("alignment-baseline", "central")
           .attr("opacity", 0)
-          .attr("x", function(d, i) {return (i + 0.5) * barWidth})
-          .attr("y", function(d) {return -scale(d)})
           .attr("style", this.options.labelStyle)
+          .text(function(d, i) {return labels[i]})
+          .each(function(d, i) {
+            var bbox = this.getBBox();
+            var ratioV = Math.min(maxSize, Math.abs(scale(d))) / bbox.height;
+            var ratioH = (barWidth - 2 * padding) / bbox.width;
+            this._scale = Math.min(ratioV, ratioH);
+            this._height = bbox.height * this._scale;
+          })
+          .attr("transform", function(d, i) {
+            var posy = d > 0? this._height / 2: -this._height / 2;
+            return  "translate(" + ((i + 0.5) * barWidth) + "," + (posy -scale(d)) + ")" +
+              "scale(" + this._scale + ")";
+          })
           .attr("fill", labelColor)
           .merge(labelsEl)
+          .text(function(d, i) {return labels[i]})
           .transition()
           .duration(this.options.transitionTime)
-          .attr("dy", function(d) {return d > 0? "1em": "-0.35em"})
-          .text(function(d, i) {return labels[i]})
-          .attr("opacity", 1)
-          .attr("x", function(d, i) {return (i + 0.5) * barWidth})
-          .attr("y", function(d) {return -scale(d)})
+          .attr("opacity", function(d) {return Math.abs(scale(d)) - 2 * padding < minSize? 0: 1})
           .attr("fill", labelColor)
+          .each(function(d, i) {
+            var bbox = this.getBBox();
+            var ratioV = Math.min(maxSize, Math.abs(scale(d))) / bbox.height;
+            var ratioH = (barWidth - 2 * padding) / bbox.width;
+            this._scale = Math.min(ratioV, ratioH);
+            this._height = bbox.height * this._scale;
+          })
+          .attr("transform", function(d, i) {
+            var posy = d > 0? this._height / 2: -this._height / 2;
+            return  "translate(" + ((i + 0.5) * barWidth) + "," + (posy -scale(d)) + ")" +
+              "scale(" + this._scale + ")";
+          })
 
         labelsEl.exit().remove();
       } else {
