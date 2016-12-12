@@ -191,6 +191,17 @@
 
         var labelsEl = this._chart.selectAll("text").data(data);
 
+        function setLabelSizeAndPos(d, i) {
+          var bbox = this.getBBox();
+          var ratioV = Math.min(maxSize, Math.abs(scale(d))) / bbox.height;
+          var ratioH = (barWidth - 2 * padding) / bbox.width;
+          var _scale = Math.min(ratioV, ratioH);
+          var height = bbox.height * _scale;
+          var posy = d > 0? height / 2: -height / 2;
+          return  "translate(" + ((i + 0.5) * barWidth) + "," + (posy - scale(d)) + ")" +
+            "scale(" + _scale + ")";
+        }
+
         labelsEl.enter()
           .append("text")
           .attr("text-anchor", "middle")
@@ -198,37 +209,16 @@
           .attr("opacity", 0)
           .attr("style", this.options.labelStyle)
           .text(function(d, i) {return labels[i]})
-          .each(function(d, i) {
-            var bbox = this.getBBox();
-            var ratioV = Math.min(maxSize, Math.abs(scale(d))) / bbox.height;
-            var ratioH = (barWidth - 2 * padding) / bbox.width;
-            this._scale = Math.min(ratioV, ratioH);
-            this._height = bbox.height * this._scale;
-          })
-          .attr("transform", function(d, i) {
-            var posy = d > 0? this._height / 2: -this._height / 2;
-            return  "translate(" + ((i + 0.5) * barWidth) + "," + (posy -scale(d)) + ")" +
-              "scale(" + this._scale + ")";
-          })
+          .attr("transform", setLabelSizeAndPos)
           .attr("fill", labelColor)
+          
           .merge(labelsEl)
           .text(function(d, i) {return labels[i]})
           .transition()
           .duration(this.options.transitionTime)
           .attr("opacity", function(d) {return Math.abs(scale(d)) - 2 * padding < minSize? 0: 1})
           .attr("fill", labelColor)
-          .each(function(d, i) {
-            var bbox = this.getBBox();
-            var ratioV = Math.min(maxSize, Math.abs(scale(d))) / bbox.height;
-            var ratioH = (barWidth - 2 * padding) / bbox.width;
-            this._scale = Math.min(ratioV, ratioH);
-            this._height = bbox.height * this._scale;
-          })
-          .attr("transform", function(d, i) {
-            var posy = d > 0? this._height / 2: -this._height / 2;
-            return  "translate(" + ((i + 0.5) * barWidth) + "," + (posy -scale(d)) + ")" +
-              "scale(" + this._scale + ")";
-          })
+          .attr("transform", setLabelSizeAndPos)
 
         labelsEl.exit().remove();
       } else {
