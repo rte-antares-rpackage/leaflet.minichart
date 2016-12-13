@@ -204,11 +204,12 @@
 
         labelsEl.enter()
           .append("text")
+          .attr("class", "leaflet-clickable")
+          .text(function(d, i) {return labels[i]})
           .attr("text-anchor", "middle")
           .attr("alignment-baseline", "central")
           .attr("opacity", 0)
           .attr("style", this.options.labelStyle)
-          .text(function(d, i) {return labels[i]})
           .attr("transform", setLabelSizeAndPos)
           .attr("fill", labelColor)
 
@@ -313,6 +314,7 @@
 
         labelsEl.enter()
           .append("text")
+          .attr("class", "leaflet-clickable")
           .text(function(d, i) {return labels[i]})
           .attr("text-anchor", "middle")
           .attr("alignment-baseline", "central")
