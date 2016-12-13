@@ -211,7 +211,7 @@
           .text(function(d, i) {return labels[i]})
           .attr("transform", setLabelSizeAndPos)
           .attr("fill", labelColor)
-          
+
           .merge(labelsEl)
           .text(function(d, i) {return labels[i]})
           .transition()
@@ -288,17 +288,35 @@
           labelColor = this.options.labelColor;
         }
 
+        // min and max size
+        var minSize = this.options.labelMinSize;
+        var maxSize = this.options.labelMaxSize;
+
+        // Label sizing and positioning
+        function setLabelSizeAndPos(d, i) {
+          if (data.length > 1) {
+            return "translate(" + arc.centroid(d) + ")"
+          } else {
+            var bbox = this.getBBox();
+            var ratio = bbox.height / bbox.width;
+            var maxHeight = Math.min(
+              scale(d.data) * 2 * Math.cos(Math.PI/2 - Math.atan(ratio)),
+              maxSize
+            )
+            var _scale =  maxHeight / bbox.height;
+            return "translate(0, 0) scale(" + _scale + ")";
+          }
+        }
+
         var labelsEl = this._chart.selectAll("text").data(pie(data));
 
         labelsEl.enter()
           .append("text")
+          .text(function(d, i) {return labels[i]})
           .attr("text-anchor", "middle")
-          .attr("alignment-baseline", "middle")
+          .attr("alignment-baseline", "central")
           .attr("opacity", 0)
-          .attr("transform", function(d) {
-            if (data.length == 1) return "translate(0, 0)"
-            else return "translate(" + arc.centroid(d) + ")"
-          })
+          .attr("transform", setLabelSizeAndPos)
           .attr("style", this.options.labelStyle)
           .attr("fill", labelColor)
           .merge(labelsEl)
@@ -307,10 +325,7 @@
           .duration(this.options.transitionTime)
           .attr("opacity", 1)
           .attr("fill", labelColor)
-          .attr("transform", function(d) {
-            if (data.length == 1) return "translate(0, 0)"
-            else return "translate(" + arc.centroid(d) + ")"
-          })
+          .attr("transform", setLabelSizeAndPos)
 
         labelsEl.exit().remove();
 
