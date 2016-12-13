@@ -216,7 +216,7 @@
           .text(function(d, i) {return labels[i]})
           .transition()
           .duration(this.options.transitionTime)
-          .attr("opacity", function(d) {return Math.abs(scale(d)) - 2 * padding < minSize? 0: 1})
+          .attr("opacity", function(d) {return Math.abs(scale(d)) < minSize? 0: 1})
           .attr("fill", labelColor)
           .attr("transform", setLabelSizeAndPos)
 
@@ -304,6 +304,7 @@
               maxSize
             )
             var _scale =  maxHeight / bbox.height;
+            this._height = maxHeight;
             return "translate(0, 0) scale(" + _scale + ")";
           }
         }
@@ -323,9 +324,9 @@
           .text(function(d, i) {return labels[i]})
           .transition()
           .duration(this.options.transitionTime)
-          .attr("opacity", 1)
           .attr("fill", labelColor)
           .attr("transform", setLabelSizeAndPos)
+          .attr("opacity", function() {return this._height < minSize? 0: 1})
 
         labelsEl.exit().remove();
 
