@@ -1,0 +1,21 @@
+{
+  "name": "leaflet.d3chart",
+  "version": "0.1.0",
+  "description": "A leaflet plugin to add animated charts to a map",
+  "main": "dist/d3chart.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Francois Guillem",
+  "license": "MIT",
+  "dependencies": {
+    "d3": "^4.4.0",
+    "tinycolor2": "^1.4.1"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-browserify": "^5.0.0",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-contrib-watch": "^1.0.0"
+  }
+}

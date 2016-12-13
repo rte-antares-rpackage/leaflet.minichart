@@ -1,3 +1,6 @@
+var d3 = require("d3");
+var tinycolor = require("tinycolor2");
+
 (function() {
 
   function toArray(x) {
