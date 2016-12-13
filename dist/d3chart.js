@@ -17616,7 +17616,8 @@ var tinycolor = require("tinycolor2");
       type: "bar",
       data: [1],
       maxValues: [1],
-      colors: d3.schemeCategory10,
+      fillColor: "#4281e5",
+      colorPalette: d3.schemeCategory10,
       width: 60,
       height: 60,
       opacity: 1,
@@ -17694,7 +17695,7 @@ var tinycolor = require("tinycolor2");
       } else if (this.options.labelText == null) {
         var labels = roundLabels(data, this.options.labelPrecision)
       } else {
-        var labels = this.options.labelText;
+        labels = toArray(this.options.labelText);
         if (labels.length != data.length) {
           throw new Error("Custom labels must have same length as data")
         }
@@ -17731,7 +17732,8 @@ var tinycolor = require("tinycolor2");
         .range([0, this.options.height]);
 
       // D3 colors function
-      var color = d3.scaleOrdinal(this.options.colors);
+      var colList = data.length == 1 ? [this.options.fillColor] : this.options.colorPalette;
+      var color = d3.scaleOrdinal(colList);
 
       var barWidth = this.options.width / data.length;
 
@@ -17845,7 +17847,8 @@ var tinycolor = require("tinycolor2");
         arc.outerRadius(function(d, i) {return scale(d.data)});
       }
 
-      var color = d3.scaleOrdinal(this.options.colors);
+      var colList = data.length == 1 ? [this.options.fillColor] : this.options.colorPalette;
+      var color = d3.scaleOrdinal(colList);
 
       // redraw the polar chart
       var slices = this._chart.selectAll("path").data(pie(data));
