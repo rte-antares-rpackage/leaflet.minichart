@@ -8,17 +8,18 @@ module.exports = function(grunt) {
     browserify: {
       dist: {
         files: {
-          "dist/d3chart.js": ["src/d3chart.js"]
+          "dist/leaflet.d3chart.js": ["src/d3chart.js"]
         }
       }
     },
     uglify: {
       options: {
-        banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+        banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %>\n' +
+                'Copyright © 2016 RTE Réseau de transport d’électricité */\n'
       },
       build: {
-        src: 'dist/d3chart.js',
-        dest: 'dist/d3chart.min.js'
+        src: 'dist/leaflet.d3chart.js',
+        dest: 'dist/leaflet.d3chart.min.js'
       }
     },
     watch: {
