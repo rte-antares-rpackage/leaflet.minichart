@@ -1,3 +1,5 @@
+// Copyright © 2016 RTE Réseau de transport d’électricité
+
 module.exports = function(grunt) {
 
   // Project configuration.

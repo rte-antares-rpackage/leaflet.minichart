@@ -1,3 +1,5 @@
+// Copyright © 2016 RTE Réseau de transport d’électricité
+
 var d3 = require("d3");
 var tinycolor = require("tinycolor2");
 
