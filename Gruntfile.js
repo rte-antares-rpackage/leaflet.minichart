@@ -22,20 +22,29 @@ module.exports = function(grunt) {
         dest: 'dist/leaflet.d3chart.min.js'
       }
     },
+    jsdoc : {
+        dist : {
+            src: ['src/*.js'],
+            options: {
+                destination: 'docs',
+                readme: "README.md"
+            }
+        }
+    },
     watch: {
       scripts: {
         files: ["src/*"],
-        tasks: ['browserify', 'uglify']
+        tasks: ['browserify', 'uglify', 'jsdoc']
       }
     }
   });
 
   // Load plugins
   grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
-
   // Default task(s).
-  grunt.registerTask('default', ['browserify', 'uglify']);
+  grunt.registerTask('default', ['browserify', 'uglify', 'jsdoc']);
 
 };

@@ -17614,6 +17614,57 @@ var tinycolor = require("tinycolor2");
   }
 
   L.D3chart = L.CircleMarker.extend({
+
+    /** Options used to initialize/update a D3chart object.
+      * @typedef {object} D3chartOptions
+      * @memberOf 'L.D3chart'
+      * @prop {string} [type = "bar"]
+      * Type of chart to create. Possible values are "bar" for barcharts, "pie"
+      * for pie charts, "polar-radius" and "polar-area" for polar area charts
+      * where values are represented either by the radius or the area of the
+      * slices.
+      * @prop {number[]} [data = [1]]
+      * Data values the chart has to represent.
+      * @prop {number[]} [maxValues = [1]]
+      * maximal absolute value the data could take. It can be a single numeric
+      * value or an array of values with same length as data. In the first case,
+      * all values will be represented with the same scale while in the second
+      * case, each value will have its own scale. This is useful when one wants
+      * to represent multiple variables that are not comparable.
+      * @prop {string} [fillColor=#4281e5]
+      * Color used to fill the shape when data contains only one value.
+      * @prop {string[]} [colorPalette=d3.schemeCategory10]
+      * Array of colors used to fill each part of the chart representing one
+      * value of data.
+      * @prop {number} [width=60]
+      * Width of the chart when `type` equals 'bar' or maximal diameter of the
+      * chart for all other types.
+      * @prop {number} [height=60]
+      * Maximal height of barcharts.
+      * @prop {number} [opacity=1]
+      * Opacity of the chart.
+      * @prop {boolean} [showLabels=false]
+      * Should values be displayed in the charts?
+      * @prop {string} [labelStyle="font-family:sans-serif"]
+      * CSS style to apply to labels
+      * @prop {number} [labelMinSize=8]
+      * Labels are automatically hidden if the label height is less than this number.
+      * @prop {number} [labelMaxSize=24]
+      * Maximal height of labels.
+      * @prop {number} [labelPadding=2]
+      * Padding to apply to labels.
+      * @prop {number} [labelPrecision=0]
+      * Number of significant digits to keep in labels. If it is equal to 0,
+      * values are displayed as is.
+      * @prop {string} [labelColor="auto"]
+      * Color to apply to labels. If "auto", text will be black or white
+      * depending on the background color.
+      * @prop {string|null} [labelText=null]
+      * Used only when data has length one. Text to display inside the shape.
+      * @prop {number} [transitionTime=750]
+      * Duration in millisecondq of transitions.
+      *
+      */
     options: {
       type: "bar",
       data: [1],
@@ -17634,6 +17685,21 @@ var tinycolor = require("tinycolor2");
       transitionTime: 750
     },
 
+    /**
+      * @class 'L.D3chart'
+      *
+      * @desc L.D3chart is used to add dynamic charts on a leaflet map. It is specially
+      * useful to represent multiple data values associated to a given geographical
+      * coordinates.
+      *
+      * @example
+      *
+      * L.d3chart()
+      *
+      * @param {L.Point} center
+      * @param {D3chartOptions} options - Object containing
+      * options to construct a chart.
+      */
     initialize: function(center, options) {
       this._center = center;
       L.Util.setOptions(this, options);
@@ -17662,6 +17728,13 @@ var tinycolor = require("tinycolor2");
       map.off('viewreset', this._reset, this);
     },
 
+    /** Update the options of a D3chart object.
+      * @method setOptions
+      * @instance
+      * @memberOf 'L.D3chart'
+      *
+      * @param {D3chartOptions} options - Object containing options to update the chart.
+      */
     setOptions: function(options) {
       var newChart = options.type && options.type != this.options.type;
       L.Util.setOptions(this, options);
