@@ -4,6 +4,16 @@ Leaflet.d3chart is a leaflet plugin for adding to a leaflet map small animated b
 
 It can be used to visualize multiple variables associated to geographical coordinates and to look at the evolution of these variables.
 
+## Usage
+
+You need to include the `leaflet` CSS and javascript files and then the `leaflet.d3chart` javascript file in the head section of your document:
+
+```html
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" media="screen" title="leaflet">
+<script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js" charset="utf-8"></script>
+<script src="https://unpkg.com/leaflet.d3chart@0.1.2/dist/leaflet.d3chart.min.js" charset="utf-8"></script>
+```
+
 ## Examples
 
 ```js

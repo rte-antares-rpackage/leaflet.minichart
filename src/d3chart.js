@@ -118,21 +118,25 @@ var tinycolor = require("tinycolor2");
     },
 
     onAdd: function(map) {
+      console.log("onAdd");
       L.CircleMarker.prototype.onAdd.call(this, map);
       // Change class of container so that the element hides when zooming
-      this._container.setAttribute("class", "leaflet-zoom-hide");
+      var container = this._container || this._renderer._container;
+      console.log(container);
+
+      container.setAttribute("class", "leaflet-zoom-hide");
 
       // create the svg element that holds the chart
-      this._chart = d3.select(this._container).append("g");
+      this._chart = d3.select(container).append("g");
 
-      map.on('viewreset', this._reset, this);
-      this._reset(true);
+      map.on('viewreset', this._redraw, this);
+      this._redraw(true);
     },
 
     onRemove: function() {
       // remove layer's DOM elements and listeners
       L.CircleMarker.prototype.onRemove.call(this, map);
-      map.off('viewreset', this._reset, this);
+      map.off('viewreset', this._redraw, this);
     },
 
     /** Update the options of a D3chart object.
@@ -145,10 +149,10 @@ var tinycolor = require("tinycolor2");
     setOptions: function(options) {
       var newChart = options.type && options.type != this.options.type;
       L.Util.setOptions(this, options);
-      this._reset(newChart);
+      this._redraw(newChart);
     },
 
-    _reset: function(newChart) {
+    _redraw: function(newChart) {
       // If necessary remove all elements of the previous chart
       if (newChart === true) {
         this._chart.selectAll("*").remove();
