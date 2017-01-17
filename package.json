@@ -1,8 +1,8 @@
 {
   "name": "leaflet.d3chart",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A leaflet plugin to add animated charts to a map",
-  "main": "dist/d3chart.js",
+  "main": "dist/leaflet.d3chart.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
