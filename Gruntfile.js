@@ -22,8 +22,8 @@ module.exports = function(grunt) {
         dest: 'dist/leaflet.d3chart.min.js'
       }
     },
-    jsdoc : {
-        dist : {
+    jsdoc: {
+        dist: {
             src: ['src/*.js'],
             options: {
                 destination: 'docs',
@@ -31,10 +31,17 @@ module.exports = function(grunt) {
             }
         }
     },
+    copy: {
+      main: {
+        expand: true,
+        src: 'img/*',
+        dest: 'docs/',
+      }
+    },
     watch: {
       scripts: {
-        files: ["src/*"],
-        tasks: ['browserify', 'uglify', 'jsdoc']
+        files: ["src/*", "README.md"],
+        tasks: ['browserify', 'uglify', 'jsdoc', "copy:main"]
       }
     }
   });
@@ -43,8 +50,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-watch');
   // Default task(s).
-  grunt.registerTask('default', ['browserify', 'uglify', 'jsdoc']);
+  grunt.registerTask('default', ['browserify', 'uglify', 'jsdoc', "copy:main"]);
 
 };
