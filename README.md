@@ -8,15 +8,19 @@ It can be used to visualize multiple variables associated to geographical coordi
 
 You need to include the `leaflet` CSS and javascript files and then the `leaflet.d3chart` javascript file in the head section of your document:
 
-```html
+``` xml
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" media="screen" title="leaflet">
 <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js" charset="utf-8"></script>
 <script src="https://unpkg.com/leaflet.d3chart@0.1.2/dist/leaflet.d3chart.min.js" charset="utf-8"></script>
 ```
 
-## Examples
+Once these files included, you can create charts with function `L.d3chart()`. All parameters are described [here](https://rte-antares-rpackage.github.io/leaflet.d3chart/-_L.D3chart_.html).
 
-```js
+## Example
+
+Here is a sample code that initializes a map and adds to it a barchart that represents three random values. Then the code updates the value every two seconds and redraws the chart.
+
+``` javascript
 var center = [48.861415, 2.349326];
 
 var mymap = L.map('map').setView(coord, 13);

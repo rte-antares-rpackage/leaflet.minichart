@@ -27,6 +27,7 @@ module.exports = function(grunt) {
             src: ['src/*.js'],
             options: {
                 destination: 'docs',
+                template: "template",
                 readme: "README.md"
             }
         }
@@ -40,7 +41,7 @@ module.exports = function(grunt) {
     },
     watch: {
       scripts: {
-        files: ["src/*", "README.md"],
+        files: ["src/*", "README.md", "template/*"],
         tasks: ['browserify', 'uglify', 'jsdoc', "copy:main"]
       }
     }
