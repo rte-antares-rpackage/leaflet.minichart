@@ -17659,8 +17659,9 @@ var tinycolor = require("tinycolor2");
       * @prop {string} [labelColor="auto"]
       * Color to apply to labels. If "auto", text will be black or white
       * depending on the background color.
-      * @prop {string|null} [labelText=null]
-      * Used only when data has length one. Text to display inside the shape.
+      * @prop {string[]|null} [labelText=null]
+      * Labels to display. It must have same length as data or be null. In the
+      * last case, data values are used as labels.
       * @prop {number} [transitionTime=750]
       * Duration in millisecondq of transitions.
       *
@@ -17687,14 +17688,14 @@ var tinycolor = require("tinycolor2");
 
     /**
       * @class 'L.D3chart'
-      *
+      * @summary add add bar, pie and polar charts to a leaflet map
       * @desc L.D3chart is used to add dynamic charts on a leaflet map. It is specially
-      * useful to represent multiple data values associated to a given geographical
+      * useful to represent multiple data values associated to some geographical
       * coordinates.
       *
       * @example
       *
-      * L.d3chart()
+      * L.d3chart([0, 0], {data: [1, 2, 3], maxValues: 3})
       *
       * @param {L.Point} center
       * @param {D3chartOptions} options - Object containing
@@ -17873,9 +17874,12 @@ var tinycolor = require("tinycolor2");
           var ratioV = Math.min(maxSize, Math.abs(scale(d))) / bbox.height;
           var ratioH = (barWidth - 2 * padding) / bbox.width;
           var _scale = Math.min(ratioV, ratioH);
+          if (isNaN(_scale) || !isFinite(_scale) || _scale < 0.1) {_scale = 0.1}
           var height = bbox.height * _scale;
           var posy = d > 0? height / 2: -height / 2;
-          return  "translate(" + ((i + 0.5) * barWidth) + "," + (posy - scale(d)) + ")" +
+
+          this._height = height;
+          return  "translate(" + ((i + 0.5) * barWidth) + "," + (posy - scale(d)) + ") " +
             "scale(" + _scale + ")";
         }
 
@@ -17884,7 +17888,7 @@ var tinycolor = require("tinycolor2");
           .attr("class", "leaflet-clickable")
           .text(function(d, i) {return labels[i]})
           .attr("text-anchor", "middle")
-          .attr("alignment-baseline", "central")
+          .attr("dy", "0.35em")
           .attr("opacity", 0)
           .attr("style", this.options.labelStyle)
           .attr("transform", setLabelSizeAndPos)
@@ -17894,9 +17898,9 @@ var tinycolor = require("tinycolor2");
           .text(function(d, i) {return labels[i]})
           .transition()
           .duration(this.options.transitionTime)
-          .attr("opacity", function(d) {return Math.abs(scale(d)) < minSize? 0: 1})
-          .attr("fill", labelColor)
           .attr("transform", setLabelSizeAndPos)
+          .attr("opacity", function(d) {return Math.abs(scale(d)) < minSize || this._height < minSize? 0: 1})
+          .attr("fill", labelColor)
 
         labelsEl.exit().remove();
       } else {
