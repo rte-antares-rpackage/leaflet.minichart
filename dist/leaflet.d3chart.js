@@ -17999,7 +17999,7 @@ var tinycolor = require("tinycolor2");
           .attr("class", "leaflet-clickable")
           .text(function(d, i) {return labels[i]})
           .attr("text-anchor", "middle")
-          .attr("alignment-baseline", "central")
+          .attr("dy", "0.35em")
           .attr("opacity", 0)
           .attr("transform", setLabelSizeAndPos)
           .attr("style", this.options.labelStyle)
