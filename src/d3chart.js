@@ -119,11 +119,9 @@ var tinycolor = require("tinycolor2");
     },
 
     onAdd: function(map) {
-      console.log("onAdd");
       L.CircleMarker.prototype.onAdd.call(this, map);
       // Change class of container so that the element hides when zooming
       var container = this._container || this._renderer._container;
-      console.log(container);
 
       container.setAttribute("class", "leaflet-zoom-hide");
 
@@ -168,6 +166,9 @@ var tinycolor = require("tinycolor2");
 
       var max = this.options.maxValues;
       var data = this.options.data;
+      for (var i = 0; i < data.length; i++) {
+        if (isNaN(data[i]) || !isFinite(data[i])) data[i] = 0;
+      }
       if(max.length !== 1 && max.length != data.length) {
         throw new Error("'maxValues' should be a single number or have same length as 'data'");
       }
@@ -211,6 +212,10 @@ var tinycolor = require("tinycolor2");
           .attr("x1", - 3)
           .attr("x2", this.options.width + 3)
           .attr("style", "stroke:#999;stroke-width:1;");
+      } else {
+        this._chart.select("line")
+          .attr("x1", - 3)
+          .attr("x2", this.options.width + 3)
       }
 
       // D3 scale function
