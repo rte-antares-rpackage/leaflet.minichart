@@ -124,5 +124,5 @@ Here is the final result:
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@0.7.3/dist/leaflet.css" media="screen" title="leaflet">
 <script src="https://unpkg.com/leaflet@0.7.3/dist/leaflet.js" charset="utf-8"></script>
-<script src="../dist/leaflet.d3chart.min.js" charset="utf-8"></script>
+<script src="leaflet.d3chart.min.js" charset="utf-8"></script>
 <script type="text/javascript" src = "js/pisa.js"></script>
