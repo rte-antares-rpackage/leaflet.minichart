@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>leaflet.d3chart Index</title>
+	<title>leaflet.d3chart Exemples</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -72,56 +72,92 @@
 		<div id="main">
 			
 
+	<h1 class="page-title">Exemples</h1>
+<section>
+
+<header>
+    
+        
+    
+</header>
+
+
+<article>
+    <div class="container-overview">
+    
+        
+
+        
+<dl class="details">
+    
+
 	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
 	
 
 
 
-
-
-
-
-
-
-
-
-	
 	
 
+	
+
+	
+
+	
+</dl>
 
 
+        
+    
+    </div>
 
+    
 
-    <section class="readme-section">
-        <article><h1>Leaflet.d3chart</h1><p>Leaflet.d3chart is a leaflet plugin for adding to a leaflet map small animated bar charts, pie charts or polar area charts.</p>
-<p>It can be used to visualize multiple variables associated to geographical coordinates and to look at the evolution of these variables.</p>
-<h2>Usage</h2><p>You need to include the <code>leaflet</code> CSS and javascript files and then the <code>leaflet.d3chart</code> javascript file in the head section of your document:</p>
-<pre class="prettyprint source lang-xml"><code>&lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/leaflet@1.0.2/dist/leaflet.css&quot; media=&quot;screen&quot; title=&quot;leaflet&quot;>
-&lt;script src=&quot;https://unpkg.com/leaflet@1.0.2/dist/leaflet.js&quot; charset=&quot;utf-8&quot;>&lt;/script>
-&lt;script src=&quot;https://unpkg.com/leaflet.d3chart@0.1.2/dist/leaflet.d3chart.min.js&quot; charset=&quot;utf-8&quot;>&lt;/script></code></pre><p>Once these files included, you can create charts with function <code>L.d3chart()</code>. All parameters are described <a href="https://rte-antares-rpackage.github.io/leaflet.d3chart/-_L.D3chart_.html">here</a>.</p>
-<h2>Example</h2><p>Here is a sample code that initializes a map and adds to it a barchart that represents three random values. Then the code updates the value every two seconds and redraws the chart.</p>
-<pre class="prettyprint source lang-javascript"><code>var center = [48.861415, 2.349326];
+    
 
-var mymap = L.map('map').setView(coord, 13);
-L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mymap);
+    
+        <h3 class="subsection-title">Classes</h3>
 
-// Let us generate fake data
-function fakeData() {
-  return [Math.Random(), Math.random(), Math.random()];
-}
+        <dl>
+            <dt><a href="-_L.D3chart_.html">'L.D3chart'</a></dt>
+            <dd>add add bar, pie and polar charts to a leaflet map</dd>
+        </dl>
+    
 
-// Create a barchart
-var myBarChart = L.d3chart(center, {data: fakeData()});
-mymap.addLayer(myBarChart);
+    
 
-// Update data every 2 seconds
-setInterval(function() {
-  myBarChart.setOptions({data: fakeData()})
-}, 2000);</code></pre><p><img src="img/example_barchart.gif" alt="Example of a barchart on a map"></p></article>
-    </section>
+    
 
+    
 
+    
 
+    
+
+    
+</article>
+
+</section>
 
 
 

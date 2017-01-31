@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>leaflet.d3chart Tutorial: International comparison of PISA scores</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.sandstone.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-inverse navbar-fixed-top">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">leaflet.d3chart</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Reference<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="-_L.D3chart_.html">'L.D3chart'</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Exemples<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="tutorial-PISA scores.html">International comparison of PISA scores</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-12">
+	
+		<div id="main">
+			<section class="tutorial-section">
+
+<header>
+    
+
+    <h2>International comparison of PISA scores</h2>
+</header>
+
+<article>
+    <p>The <a href="https://en.wikipedia.org/wiki/Programme_for_International_Student_Assessment">Program for International Student Assesment (PISA)</a> is an international study conducted by the OECD. It measures the evolution of the performance of 15 years old pupils on mathematics, science and reading in different countries.</p>
+<p>This document demonstrates how to use the <code>leaflet.d3chart</code> plugin to represent over a leaflet map the scores of the pupils of the different countries.</p>
+<h2>Data</h2><p>The data to represent has the following format:</p>
+<pre class="prettyprint source lang-javascript"><code>var data = [
+  {&quot;year&quot;:2015,&quot;country&quot;:&quot;Australia&quot;,&quot;math&quot;:494,&quot;reading&quot;:503,&quot;science&quot;:510,&quot;lon&quot;:133.7751,&quot;lat&quot;:-25.2744},
+  {&quot;year&quot;:2015,&quot;country&quot;:&quot;Austria&quot;,&quot;math&quot;:497,&quot;reading&quot;:485,&quot;science&quot;:495,&quot;lon&quot;:14.5501,&quot;lat&quot;:47.5162},
+  {&quot;year&quot;:2015,&quot;country&quot;:&quot;Belgium&quot;,&quot;math&quot;:507,&quot;reading&quot;:499,&quot;science&quot;:502,&quot;lon&quot;:4.4699,&quot;lat&quot;:50.5039},
+  ...
+];</code></pre><p>We also have the average score for each category:</p>
+<pre class="prettyprint source lang-javascript"><code>var avgScores = {math: 493.4, reading: 492.7, science: 498.2};</code></pre><h2>Initialisation of the map</h2><p>In the header of our html file we include <code>leaflet</code> and the <code>leaflet.d3chart</code> plugin:</p>
+<pre class="prettyprint source lang-xml"><code>&lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/leaflet@0.7.3/dist/leaflet.css&quot; media=&quot;screen&quot; title=&quot;leaflet&quot;>
+&lt;script src=&quot;https://unpkg.com/leaflet@0.7.3/dist/leaflet.js&quot; charset=&quot;utf-8&quot;>&lt;/script>
+&lt;script src=&quot;../dist/leaflet.d3chart.min.js&quot; charset=&quot;utf-8&quot;>&lt;/script>
+&lt;script src=&quot;https://unpkg.com/leaflet.d3chart@0.1.3/dist/leaflet.d3chart.min.js&quot; charset=&quot;utf-8&quot;>&lt;/script></code></pre><p>We also add a div that will contain the leaflet map:</p>
+<pre class="prettyprint source lang-xml"><code>&lt;div id=&quot;map&quot; style=&quot;width:100%;height:400px;&quot;>&lt;/div></code></pre><p>The following javascript code initializes the map:</p>
+<pre class="prettyprint source lang-javascript"><code>var center = [48.861415, 4.349326];
+var mymap = L.map('map').setView(center, 4);
+var tiles = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}');
+tiles.addTo(mymap);</code></pre><p>We now want to add to the map barcharts that represent the deviance to the mean of the three scores for year 2015. To do so, we loop over our data and create a <code>d3charts</code> object for each country. We store
+store them in an array so we will be able to update them later.</p>
+<pre class="prettyprint source lang-javascript"><code>var charts = {};
+for (var i = 0; i &lt; data.length; i++) {
+  var d = data[i];
+
+  if (d.year == 2015) {
+    var scoresDiff = [
+      d.math - avgScores.math,
+      d.reading - avgScores.reading,
+      d.science - avgScores.science
+    ];
+    charts[d.country] = L.d3chart([d.lat, d.lon], {data: scoresDiff, maxValues: 90});
+    mymap.addLayer(charts[d.country] ) ;
+  }
+}</code></pre><div id="map0" style="width:100%;height:400px;margin-bottom:20px;"></div>
+
+<p>We can improve our map by passing some additional options to <code>L.d3chart</code> to reduce the size of the charts and use prettier colors:</p>
+<pre class="prettyprint source lang-javascript"><code>charts[d.country] = L.d3chart(
+  [d.lat, d.lon],
+  {
+    data: scoresDiff,
+    maxValues: 90,
+    width:40, height:40,
+    colorPalette: [&quot;#7A8B99&quot;, &quot;#91ADC2&quot;, &quot;#A9DDD6&quot;]
+  }
+);</code></pre><div id="map1" style="width:100%;height:400px;margin-bottom:20px;"></div>
+
+<h2>Update charts</h2><p>We have represented the PISA results for 2015 but we would like to also look at the results of the other years. To do so let us add a select input to our document. Each time the user changes the value of the input a javascript function called &quot;updateMap&quot; is</p>
+<pre class="prettyprint source lang-xml"><code>&lt;select id = &quot;year&quot; onchange=&quot;updateMap()&quot;>
+  &lt;option value=&quot;2015&quot;>2015&lt;/option>
+  &lt;option value=&quot;2012&quot;>2012&lt;/option>
+  &lt;option value=&quot;2009&quot;>2009&lt;/option>
+  &lt;option value=&quot;2006&quot;>2006&lt;/option>
+&lt;/select></code></pre><p>To update charts we use the <code>setOption</code> method.</p>
+<pre class="prettyprint source lang-javascript"><code>function updateMap() {
+  var year = document.getElementById(&quot;year&quot;).value;
+  for (var i = 0; i &lt; data.length; i++) {
+    var d = data[i];
+
+    if (d.year == year) {
+      var scoresDiff = [
+        d.math - avgScores.math,
+        d.reading - avgScores.reading,
+        d.science - avgScores.science
+      ];
+      charts[d.country].setOptions({data:scoresDiff});
+    }
+  }
+}</code></pre><p>Here is the final result:</p>
+<p><select id = "year" onchange="updateMap()">
+  <option value="2015">2015</option>
+  <option value="2012">2012</option>
+  <option value="2009">2009</option>
+  <option value="2006">2006</option>
+</select></p>
+<div id="map" style="width:100%;height:600px;margin-bottom:10px;"></div>
+
+<p><link rel="stylesheet" href="https://unpkg.com/leaflet@0.7.3/dist/leaflet.css" media="screen" title="leaflet"></p>
+<script src="https://unpkg.com/leaflet@0.7.3/dist/leaflet.js" charset="utf-8"></script>
+<script src="../dist/leaflet.d3chart.min.js" charset="utf-8"></script>
+<script type="text/javascript" src = "js/pisa.js"></script>
+</article>
+
+</section>
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a>
+	
+		on 2017-01-31T17:14:17+01:00
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : false,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>
