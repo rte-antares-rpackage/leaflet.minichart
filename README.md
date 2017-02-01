@@ -11,7 +11,7 @@ You need to include the `leaflet` CSS and javascript files and then the `leaflet
 ``` xml
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" media="screen" title="leaflet">
 <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js" charset="utf-8"></script>
-<script src="https://unpkg.com/leaflet.d3chart@0.1.2/dist/leaflet.d3chart.min.js" charset="utf-8"></script>
+<script src="https://unpkg.com/leaflet.d3chart@0.1.3/dist/leaflet.d3chart.min.js" charset="utf-8"></script>
 ```
 
 Once these files included, you can create charts with function `L.d3chart()`. All parameters are described [here](https://rte-antares-rpackage.github.io/leaflet.d3chart/-_L.D3chart_.html).
@@ -42,3 +42,6 @@ setInterval(function() {
 ```
 
 ![Example of a barchart on a map](img/example_barchart.gif)
+
+You can find more complete examples here:
+* [International comparison of PISA scores](https://rte-antares-rpackage.github.io/leaflet.d3chart/tutorial-PISA%20scores.html)
