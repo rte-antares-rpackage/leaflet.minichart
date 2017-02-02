@@ -34,7 +34,7 @@ module.exports = function(grunt) {
         }
     },
     copy: {
-      main: {
+      doc: {
         files: [
           {expand: true, src: "img/*", dest: "docs/"},
           {expand: true, cwd: "examples", src: "js/*", dest: "docs/"},
@@ -43,9 +43,13 @@ module.exports = function(grunt) {
       }
     },
     watch: {
-      scripts: {
+      source: {
+        files: ["src/*"],
+        tasks: ['browserify', 'uglify']
+      },
+      doc: {
         files: ["src/*", "README.md", "template/*", "examples/**"],
-        tasks: ['browserify', 'uglify', 'jsdoc', "copy:main"]
+        tasks: ['jsdoc', "copy:doc"]
       }
     }
   });
@@ -58,7 +62,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   // Default task(s).
   grunt.registerTask('build', ['browserify', 'uglify']);
-  grunt.registerTask('doc', ['jsdoc', "copy:main"]);
-  grunt.registerTask('default', ['jsdoc', "copy:main"]);
+  grunt.registerTask('doc', ['jsdoc', "copy:doc"]);
+  grunt.registerTask('default', ['jsdoc', "copy:doc"]);
 
 };

@@ -17592,25 +17592,14 @@ else {
 
 },{}],3:[function(require,module,exports){
 // Copyright © 2016 RTE Réseau de transport d’électricité
-
-var d3 = require("d3");
-var tinycolor = require("tinycolor2");
-
 (function() {
+  var d3 = require("d3");
+  var tinycolor = require("tinycolor2");
+  var prettyNumbers = require("./prettyNumbers.js")
 
   function toArray(x) {
     if (x.constructor !== Array) x = [x];
     return x;
-  }
-
-  function roundLabels(x, precision) {
-    x = toArray(x);
-    var res = [];
-    for (var i = 0; i < x.length; i++) {
-      if (precision == 0) res.push(x[i]);
-      else res.push(x[i].toPrecision(precision));
-    }
-    return res;
   }
 
   L.D3chart = L.CircleMarker.extend({
@@ -17653,9 +17642,6 @@ var tinycolor = require("tinycolor2");
       * Maximal height of labels.
       * @prop {number} [labelPadding=2]
       * Padding to apply to labels.
-      * @prop {number} [labelPrecision=0]
-      * Number of significant digits to keep in labels. If it is equal to 0,
-      * values are displayed as is.
       * @prop {string} [labelColor="auto"]
       * Color to apply to labels. If "auto", text will be black or white
       * depending on the background color.
@@ -17680,7 +17666,6 @@ var tinycolor = require("tinycolor2");
       labelMinSize: 8,
       labelMaxSize: 24,
       labelPadding: 2,
-      labelPrecision: 0,
       labelColor: "auto",
       labelText: null,
       transitionTime: 750
@@ -17774,7 +17759,7 @@ var tinycolor = require("tinycolor2");
       if (!this.options.showLabels) {
         var labels = null;
       } else if (this.options.labelText == null) {
-        var labels = roundLabels(data, this.options.labelPrecision)
+        var labels = prettyNumbers(data)
       } else {
         labels = toArray(this.options.labelText);
         if (labels.length != data.length) {
@@ -18030,4 +18015,47 @@ var tinycolor = require("tinycolor2");
 };
 })();
 
-},{"d3":1,"tinycolor2":2}]},{},[3]);
+},{"./prettyNumbers.js":4,"d3":1,"tinycolor2":2}],4:[function(require,module,exports){
+module.exports = function(numbers) {
+  return numbers.map(prettyNumber);
+}
+
+function prettyNumber(number) {
+  if (isNaN(number) || !isFinite(number)) return "";
+
+  var absVal = Math.abs(number);
+  var sign= number < 0? "-": "";
+
+  if( absVal < 1000 ) {
+      scale = '';
+  } else if( absVal < 1000000 ) {
+      scale = 'K';
+      absVal = absVal/1000;
+
+  } else if( absVal < 1000000000 ) {
+      scale = 'M';
+      absVal = absVal/1000000;
+
+  } else if( absVal < 1000000000000 ) {
+      scale = 'B';
+      absVal = absVal/1000000000;
+
+  } else if( absVal < 1000000000000000 ) {
+      scale = 'T';
+      absVal = absVal/1000000000000;
+  }
+
+  if (absVal > 10) absVal = roundTo(absVal);
+  else if (absVal > 1) absVal = roundTo(absVal, 10, true);
+  else absVal = roundTo(absVal, 100, true);
+
+  return sign + absVal + scale;
+}
+
+function roundTo(number, to, inverse) {
+  to = to || 1;
+  if (inverse) return Math.round(number * to) / to;
+  else return Math.round(number / to) * to;
+}
+
+},{}]},{},[3]);
