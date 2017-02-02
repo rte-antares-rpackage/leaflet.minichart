@@ -17602,6 +17602,20 @@ else {
     return x;
   }
 
+  function addOneLabel(el, options, color) {
+    el._container = d3.select(el);
+    el._label = el._container.append("g")
+      .attr("class", "label");
+
+    el._text = el._label.append("text")
+      .attr("class", "leaflet-clickable")
+      .attr("dy", "0.35em")
+      .attr("text-anchor", "middle")
+      .attr("opacity", 1)
+      .attr("style", options.labelStyle)
+      .attr("fill", color)
+  }
+
   L.D3chart = L.CircleMarker.extend({
 
     /** Options used to initialize/update a D3chart object.
@@ -17852,25 +17866,20 @@ else {
         } else {
           labelColor = function(i) {return this.options.labelColor};
         }
-        // min and max size
-        var minSize = this.options.labelMinSize;
-        var maxSize = this.options.labelMaxSize;
-        var padding = this.options.labelPadding;
 
+        function labelPositionAndSize(el, options, barWidth, scale, d, i) {
+          var bbox = el._text.node().getBBox();
 
-        function setLabelSizeAndPos(d, i) {
-          var bbox = this.getBBox();
-          var ratioV = Math.min(maxSize, Math.abs(scale(d))) / bbox.height;
-          var ratioH = (barWidth - 2 * padding) / bbox.width;
-          var _scale = Math.min(ratioV, ratioH);
-          if (isNaN(_scale) || !isFinite(_scale)) {_scale = 0}
-          var height = bbox.height * _scale;
-
+          var ratioV = Math.min(options.labelMaxSize, Math.abs(scale(d))) / bbox.height;
+          var ratioH = (barWidth - 2 * options.labelPadding) / bbox.width;
+          el._scale = Math.min(ratioV, ratioH);
+          if (isNaN(el._scale) || !isFinite(el._scale)) {el._scale = 0}
+          var height = bbox.height * el._scale;
+          if (height < options.labelMinSize) {el._scale = 0}
           var posy = d > 0? height / 2: -height / 2;
 
-          this._height = height;
-          return  "translate(" + ((i + 0.5) * barWidth) + "," + (posy - scale(d)) + ") " +
-            "scale(" + _scale + ")";
+          el._x = (i + 0.5) * barWidth;
+          el._y = posy - scale(d);
         }
 
         var labelsEl = this._chart.selectAll(".labels-container").data(data);
@@ -17879,66 +17888,23 @@ else {
           .append("g")
           .attr("class", "labels-container")
           .each(function(d, i) {
-            this._container = d3.select(this);
-            this._label = this._container.append("g")
-              .attr("class", "label");
-
-            this._text = this._label.append("text")
-              .attr("class", "leaflet-clickable")
-              .attr("dy", "0.35em")
-              .attr("text-anchor", "middle")
-              .attr("opacity", 1)
-              .attr("style", self.options.labelStyle)
-              .attr("fill", labelColor(i))
-              .text(labels[i])
-
-            var bbox = this._text.node().getBBox();
-
-            var ratioV = Math.min(maxSize, Math.abs(scale(d))) / bbox.height;
-            var ratioH = (barWidth - 2 * padding) / bbox.width;
-            var _scale = Math.min(ratioV, ratioH);
-            if (isNaN(_scale) || !isFinite(_scale)) {_scale = 0}
-            var height = bbox.height * _scale;
-            if (height < minSize) {_scale = 0}
-            var posy = d > 0? height / 2: -height / 2;
-
-            this._container.attr("transform", "translate(" + ((i + 0.5) * barWidth) + "," + (posy - scale(d)) + ")");
-            this._label.attr("transform", "scale(" + _scale + ")");
+            addOneLabel(this, self.options, labelColor(i));
+            labelPositionAndSize(this, self.options, barWidth, scale, d, i)
+            this._container.attr("transform", "translate(" + this._x + "," + this._y + ")");
+            this._label.attr("transform", "scale(" + this._scale + ")");
           })
 
           .merge(labelsEl)
           .each(function(d, i) {
             this._text.text(labels[i]);
-
-            var bbox = this._text.node().getBBox();
-
-            var ratioV = Math.min(maxSize, Math.abs(scale(d))) / bbox.height;
-            var ratioH = (barWidth - 2 * padding) / bbox.width;
-            var _scale = Math.min(ratioV, ratioH);
-            if (isNaN(_scale) || !isFinite(_scale)) {_scale = 0}
-            var height = bbox.height * _scale;
-            if (height < minSize) {_scale = 0}
-            var posy = d > 0? height / 2: -height / 2;
-
-            this._posx = (i + 0.5) * barWidth;
-            this._posy = posy - scale(d);
-
-            this._label.attr("transform", "scale(" + _scale + ")")
-
+            labelPositionAndSize(this, self.options, barWidth, scale, d, i)
+            this._label.attr("transform", "scale(" + this._scale + ")");
           })
           .transition()
           .duration(this.options.transitionTime)
           .attr("transform", function(d, i) {
-            return "translate(" + this._posx + "," + this._posy + ")";
+            return "translate(" + this._x + "," + this._y + ")";
           });
-
-          // .merge(labelsEl)
-          // .text(function(d, i) {return labels[i]})
-          // .transition()
-          // .duration(this.options.transitionTime)
-          // .attr("transform", setLabelSizeAndPos)
-          // .attr("opacity", function(d) {return Math.abs(scale(d)) < minSize || this._height < minSize? 0: 1})
-          // .attr("fill", labelColor)
 
         labelsEl.exit().remove();
       } else {
