@@ -17595,7 +17595,8 @@ else {
 (function() {
   var d3 = require("d3");
   var tinycolor = require("tinycolor2");
-  var prettyNumbers = require("./prettyNumbers.js")
+  var prettyNumbers = require("./prettyNumbers.js");
+  var g = require("./geometry.js");
 
   function toArray(x) {
     if (x.constructor !== Array) x = [x];
@@ -17889,6 +17890,7 @@ else {
           .attr("class", "labels-container")
           .each(function(d, i) {
             addOneLabel(this, self.options, labelColor(i));
+            this._text.text(labels[i]);
             labelPositionAndSize(this, self.options, barWidth, scale, d, i)
             this._container.attr("transform", "translate(" + this._x + "," + this._y + ")");
             this._label.attr("transform", "scale(" + this._scale + ")");
@@ -17897,6 +17899,7 @@ else {
           .merge(labelsEl)
           .each(function(d, i) {
             this._text.text(labels[i]);
+            this._text.attr("fill", labelColor(i));
             labelPositionAndSize(this, self.options, barWidth, scale, d, i)
             this._label.attr("transform", "scale(" + this._scale + ")");
           })
@@ -17925,14 +17928,14 @@ else {
       var arc = d3.arc().innerRadius(0);
 
       if (type == "angle") {
+        var scale = function(d) {return radius}
         pie.value(function(d) {return d});
-        arc.outerRadius(function(d) {return radius});
       } else {
         var scale = type == "radius" ? d3.scaleLinear() : d3.scalePow().exponent(0.5);
         scale.range([0, radius]);
         pie.value(function(d) {return 1});
-        arc.outerRadius(function(d, i) {return scale(d.data)});
       }
+      arc.outerRadius(function(d, i) {return scale(d.data)});
 
       var colList = data.length == 1 ? [this.options.fillColor] : this.options.colorPalette;
       var color = d3.scaleOrdinal(colList);
@@ -17968,56 +17971,96 @@ else {
       if (labels) {
         // Label colors
         if (this.options.labelColor == "auto") {
-          labelColor = function(d, i) {
+          labelColor = function(i) {
             return tinycolor.mostReadable(color(i), ["white", "black"])._originalInput
           }
         } else {
-          labelColor = this.options.labelColor;
+          labelColor = function(i) {return this.options.labelColor};
         }
 
-        // min and max size
-        var minSize = this.options.labelMinSize;
-        var maxSize = this.options.labelMaxSize;
+        function labelPositionAndSize(el, options, scale, arc, d, i, data) {
+          var bbox = el._text.node().getBBox();
+          var ratio = bbox.height / bbox.width;
+          el._width = bbox.width;
 
-        // Label sizing and positioning
-        function setLabelSizeAndPos(d, i) {
           if (data.length > 1) {
-            return "translate(" + arc.centroid(d) + ")"
+            // chart is a pie of polar chart.
+            var c = arc.centroid(d)
+            el._x = c[0];
+            el._y = c[1];
+
+            // Get maximal scale so that label fits in the slice.
+            var diag1 = new g.Line(c[1] - ratio * c[0], ratio);
+            var diag2 = new g.Line(c[1] + ratio * c[0], -ratio);
+            var limit1 = new g.Line(0, Math.tan(d.startAngle + Math.PI/2));
+            var limit2 = new g.Line(0, Math.tan(d.endAngle + Math.PI/2));
+
+            // Get all intersection points
+            var intersects = [];
+            intersects = intersects.concat(g.intersectionOfTwoLines(diag1, limit1));
+            intersects = intersects.concat(g.intersectionOfTwoLines(diag1, limit2));
+            intersects = intersects.concat(g.intersectionLineAndCircle(diag1, scale(d.data)));
+            intersects = intersects.concat(g.intersectionOfTwoLines(diag2, limit1));
+            intersects = intersects.concat(g.intersectionOfTwoLines(diag2, limit2));
+            intersects = intersects.concat(g.intersectionLineAndCircle(diag2, scale(d.data)));
+
+            // Compute distance between all these points and take the minimum
+            var center = new g.Point(c[0], c[1]);
+            var distances = intersects.map(function(x) {return g.distance(center, x)});
+            var minDist = d3.min(distances);
+            var actualDist = Math.sqrt( Math.pow(bbox.height / 2, 2) + Math.pow(bbox.width / 2, 2));
+
+            el._scale = minDist / actualDist;
           } else {
-            var bbox = this.getBBox();
-            var ratio = bbox.height / bbox.width;
-            var maxHeight = Math.min(
-              scale(d.data) * 2 * Math.cos(Math.PI/2 - Math.atan(ratio)),
-              maxSize
-            )
-            var _scale =  maxHeight / bbox.height;
-            this._height = maxHeight;
-            return "translate(0, 0) scale(" + _scale + ")";
+            // Chart is a bubble chart.
+            // Put the label at the center and scale it to fit the circle
+            el._x = 0;
+            el._y = 0;
+
+            var maxHeight = scale(d.data) * 2 * Math.cos(Math.PI/2 - Math.atan(ratio))
+            el._scale =  maxHeight / bbox.height;
+          }
+          if (isNaN(el._scale) || !isFinite(el._scale) || bbox.height * el._scale < options.labelMinSize) {
+            el._scale = 0;
+          }
+          if (bbox.height * el._scale > options.labelMaxSize) {
+            el._scale = options.labelMaxSize / bbox.height;
           }
         }
 
-        var labelsEl = this._chart.selectAll("text").data(pie(data));
-
+        var self = this;
+        var labelsEl = this._chart.selectAll(".labels-container").data(pie(data));
         labelsEl.enter()
-          .append("text")
-          .attr("class", "leaflet-clickable")
-          .text(function(d, i) {return labels[i]})
-          .attr("text-anchor", "middle")
-          .attr("dy", "0.35em")
-          .attr("opacity", 0)
-          .attr("transform", setLabelSizeAndPos)
-          .attr("style", this.options.labelStyle)
-          .attr("fill", labelColor)
+          .append("g")
+          .attr("class", "labels-container")
+          .each(function(d, i) {
+            addOneLabel(this, self.options, labelColor(i));
+            this._text.text(labels[i]);
+            labelPositionAndSize(this, self.options, scale, arc, d, i, data);
+            this._container.attr("transform", "translate(" + this._x + "," + this._y + ")");
+            this._label.attr("transform", "scale(" + this._scale + ")");
+          })
+
           .merge(labelsEl)
-          .text(function(d, i) {return labels[i]})
+          .each(function(d, i) {
+            var oldWidth = this._width;
+            var oldScale = this._scale;
+            this._text.text(labels[i]);
+            this._text.attr("fill", labelColor(i));
+            labelPositionAndSize(this, self.options, scale, arc, d, i, data);
+            this._label
+              .attr("transform", "scale(" + Math.min(oldScale, oldWidth * oldScale / this._width) + ")")
+              .transition()
+              .duration(self.options.transitionTime)
+              .attr("transform", "scale(" + this._scale + ")");
+          })
           .transition()
-          .duration(this.options.transitionTime)
-          .attr("fill", labelColor)
-          .attr("transform", setLabelSizeAndPos)
-          .attr("opacity", function() {return this._height < minSize? 0: 1})
+          .duration(self.options.transitionTime)
+          .attr("transform", function(d, i) {
+            return "translate(" + this._x + "," + this._y + ")";
+          });
 
         labelsEl.exit().remove();
-
       } else {
         this._chart.selectAll("text").remove();
       }
@@ -18029,7 +18072,58 @@ else {
 };
 })();
 
-},{"./prettyNumbers.js":4,"d3":1,"tinycolor2":2}],4:[function(require,module,exports){
+},{"./geometry.js":4,"./prettyNumbers.js":5,"d3":1,"tinycolor2":2}],4:[function(require,module,exports){
+(function() {
+  'use strict';
+
+  module.exports.Point = Point;
+  module.exports.Line = Line;
+  module.exports.intersectionOfTwoLines = intersectionOfTwoLines
+  module.exports.intersectionLineAndCircle = intersectionLineAndCircle
+  module.exports.distance = distance
+
+  function Point(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  function Line(a, b) {
+    this.a = a;
+    this.b = b
+  }
+  Line.prototype.getY = function(x) {
+    return this.a + this.b * x;
+  }
+
+  function intersectionOfTwoLines(l1, l2) {
+    if (l1.b == l2.b) return []
+    return [new Point(
+      (l2.a - l1.a) / (l1.b - l2.b),
+      (l1.b * l2.a - l1.a * l2.b) / (l1.b - l2.b)
+    )]
+  }
+
+  function intersectionLineAndCircle(l, r) {
+    var x = solveEqSecondDegree(l.b * l.b + 1, 2 * l.a * l.b, l.a * l.a - r * r);
+    return x.map(function(x) {return new Point(x, l.getY(x))});
+  }
+
+  function solveEqSecondDegree(a, b, c) {
+    var det = b * b - 4 * a * c
+    if (det < 0) return [];
+    if (det == 0) return [(- b) / (2 * a)];
+    else return [
+      (-b - Math.sqrt(det)) / (2 * a),
+      (-b + Math.sqrt(det)) / (2 * a)
+    ]
+  }
+
+  function distance(p1, p2) {
+    return Math.sqrt( Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2))
+  }
+}());
+
+},{}],5:[function(require,module,exports){
 module.exports = function(numbers) {
   return numbers.map(prettyNumber);
 }
