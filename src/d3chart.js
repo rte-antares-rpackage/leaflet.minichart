@@ -2,7 +2,8 @@
 (function() {
   var d3 = require("d3");
   var tinycolor = require("tinycolor2");
-  var prettyNumbers = require("./prettyNumbers.js")
+  var prettyNumbers = require("./prettyNumbers.js");
+  var g = require("./geometry.js");
 
   function toArray(x) {
     if (x.constructor !== Array) x = [x];
@@ -305,6 +306,7 @@
           .merge(labelsEl)
           .each(function(d, i) {
             this._text.text(labels[i]);
+            this._text.attr("fill", labelColor(i));
             labelPositionAndSize(this, self.options, barWidth, scale, d, i)
             this._label.attr("transform", "scale(" + this._scale + ")");
           })
@@ -333,14 +335,14 @@
       var arc = d3.arc().innerRadius(0);
 
       if (type == "angle") {
+        var scale = function(d) {return radius}
         pie.value(function(d) {return d});
-        arc.outerRadius(function(d) {return radius});
       } else {
         var scale = type == "radius" ? d3.scaleLinear() : d3.scalePow().exponent(0.5);
         scale.range([0, radius]);
         pie.value(function(d) {return 1});
-        arc.outerRadius(function(d, i) {return scale(d.data)});
       }
+      arc.outerRadius(function(d, i) {return scale(d.data)});
 
       var colList = data.length == 1 ? [this.options.fillColor] : this.options.colorPalette;
       var color = d3.scaleOrdinal(colList);
@@ -384,26 +386,52 @@
         }
 
         function labelPositionAndSize(el, options, scale, arc, d, i, data) {
+          var bbox = el._text.node().getBBox();
+          var ratio = bbox.height / bbox.width;
+          el._width = bbox.width;
+
           if (data.length > 1) {
             // chart is a pie of polar chart.
             var c = arc.centroid(d)
             el._x = c[0];
             el._y = c[1];
-            el._scale = 1;
+
+            // Get maximal scale so that label fits in the slice.
+            var diag1 = new g.Line(c[1] - ratio * c[0], ratio);
+            var diag2 = new g.Line(c[1] + ratio * c[0], -ratio);
+            var limit1 = new g.Line(0, Math.tan(d.startAngle + Math.PI/2));
+            var limit2 = new g.Line(0, Math.tan(d.endAngle + Math.PI/2));
+
+            // Get all intersection points
+            var intersects = [];
+            intersects = intersects.concat(g.intersectionOfTwoLines(diag1, limit1));
+            intersects = intersects.concat(g.intersectionOfTwoLines(diag1, limit2));
+            intersects = intersects.concat(g.intersectionLineAndCircle(diag1, scale(d.data)));
+            intersects = intersects.concat(g.intersectionOfTwoLines(diag2, limit1));
+            intersects = intersects.concat(g.intersectionOfTwoLines(diag2, limit2));
+            intersects = intersects.concat(g.intersectionLineAndCircle(diag2, scale(d.data)));
+
+            // Compute distance between all these points and take the minimum
+            var center = new g.Point(c[0], c[1]);
+            var distances = intersects.map(function(x) {return g.distance(center, x)});
+            var minDist = d3.min(distances);
+            var actualDist = Math.sqrt( Math.pow(bbox.height / 2, 2) + Math.pow(bbox.width / 2, 2));
+
+            el._scale = minDist / actualDist;
           } else {
             // Chart is a bubble chart.
             // Put the label at the center and scale it to fit the circle
             el._x = 0;
             el._y = 0;
 
-            var bbox = el._text.node().getBBox();
-            var ratio = bbox.height / bbox.width;
-            var maxHeight = Math.min(
-              scale(d.data) * 2 * Math.cos(Math.PI/2 - Math.atan(ratio)),
-              options.labelMaxSize
-            )
-            el._scale =  maxHeight < options.labelMinSize? 0: maxHeight / bbox.height;
-            el._width = bbox.width;
+            var maxHeight = scale(d.data) * 2 * Math.cos(Math.PI/2 - Math.atan(ratio))
+            el._scale =  maxHeight / bbox.height;
+          }
+          if (isNaN(el._scale) || !isFinite(el._scale) || bbox.height * el._scale < options.labelMinSize) {
+            el._scale = 0;
+          }
+          if (bbox.height * el._scale > options.labelMaxSize) {
+            el._scale = options.labelMaxSize / bbox.height;
           }
         }
 
@@ -425,6 +453,7 @@
             var oldWidth = this._width;
             var oldScale = this._scale;
             this._text.text(labels[i]);
+            this._text.attr("fill", labelColor(i));
             labelPositionAndSize(this, self.options, scale, arc, d, i, data);
             this._label
               .attr("transform", "scale(" + Math.min(oldScale, oldWidth * oldScale / this._width) + ")")
@@ -432,7 +461,13 @@
               .duration(self.options.transitionTime)
               .attr("transform", "scale(" + this._scale + ")");
           })
+          .transition()
+          .duration(self.options.transitionTime)
+          .attr("transform", function(d, i) {
+            return "translate(" + this._x + "," + this._y + ")";
+          });
 
+        labelsEl.exit().remove();
       } else {
         this._chart.selectAll("text").remove();
       }
