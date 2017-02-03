@@ -296,6 +296,7 @@
           .attr("class", "labels-container")
           .each(function(d, i) {
             addOneLabel(this, self.options, labelColor(i));
+            this._text.text(labels[i]);
             labelPositionAndSize(this, self.options, barWidth, scale, d, i)
             this._container.attr("transform", "translate(" + this._x + "," + this._y + ")");
             this._label.attr("transform", "scale(" + this._scale + ")");
@@ -375,55 +376,62 @@
       if (labels) {
         // Label colors
         if (this.options.labelColor == "auto") {
-          labelColor = function(d, i) {
+          labelColor = function(i) {
             return tinycolor.mostReadable(color(i), ["white", "black"])._originalInput
           }
         } else {
-          labelColor = this.options.labelColor;
+          labelColor = function(i) {return this.options.labelColor};
         }
 
-        // min and max size
-        var minSize = this.options.labelMinSize;
-        var maxSize = this.options.labelMaxSize;
-
-        // Label sizing and positioning
-        function setLabelSizeAndPos(d, i) {
+        function labelPositionAndSize(el, options, scale, arc, d, i, data) {
           if (data.length > 1) {
-            return "translate(" + arc.centroid(d) + ")"
+            // chart is a pie of polar chart.
+            var c = arc.centroid(d)
+            el._x = c[0];
+            el._y = c[1];
+            el._scale = 1;
           } else {
-            var bbox = this.getBBox();
+            // Chart is a bubble chart.
+            // Put the label at the center and scale it to fit the circle
+            el._x = 0;
+            el._y = 0;
+
+            var bbox = el._text.node().getBBox();
             var ratio = bbox.height / bbox.width;
             var maxHeight = Math.min(
               scale(d.data) * 2 * Math.cos(Math.PI/2 - Math.atan(ratio)),
-              maxSize
+              options.labelMaxSize
             )
-            var _scale =  maxHeight / bbox.height;
-            this._height = maxHeight;
-            return "translate(0, 0) scale(" + _scale + ")";
+            el._scale =  maxHeight < options.labelMinSize? 0: maxHeight / bbox.height;
+            el._width = bbox.width;
           }
         }
 
-        var labelsEl = this._chart.selectAll("text").data(pie(data));
-
+        var self = this;
+        var labelsEl = this._chart.selectAll(".labels-container").data(pie(data));
         labelsEl.enter()
-          .append("text")
-          .attr("class", "leaflet-clickable")
-          .text(function(d, i) {return labels[i]})
-          .attr("text-anchor", "middle")
-          .attr("dy", "0.35em")
-          .attr("opacity", 0)
-          .attr("transform", setLabelSizeAndPos)
-          .attr("style", this.options.labelStyle)
-          .attr("fill", labelColor)
-          .merge(labelsEl)
-          .text(function(d, i) {return labels[i]})
-          .transition()
-          .duration(this.options.transitionTime)
-          .attr("fill", labelColor)
-          .attr("transform", setLabelSizeAndPos)
-          .attr("opacity", function() {return this._height < minSize? 0: 1})
+          .append("g")
+          .attr("class", "labels-container")
+          .each(function(d, i) {
+            addOneLabel(this, self.options, labelColor(i));
+            this._text.text(labels[i]);
+            labelPositionAndSize(this, self.options, scale, arc, d, i, data);
+            this._container.attr("transform", "translate(" + this._x + "," + this._y + ")");
+            this._label.attr("transform", "scale(" + this._scale + ")");
+          })
 
-        labelsEl.exit().remove();
+          .merge(labelsEl)
+          .each(function(d, i) {
+            var oldWidth = this._width;
+            var oldScale = this._scale;
+            this._text.text(labels[i]);
+            labelPositionAndSize(this, self.options, scale, arc, d, i, data);
+            this._label
+              .attr("transform", "scale(" + Math.min(oldScale, oldWidth * oldScale / this._width) + ")")
+              .transition()
+              .duration(self.options.transitionTime)
+              .attr("transform", "scale(" + this._scale + ")");
+          })
 
       } else {
         this._chart.selectAll("text").remove();
