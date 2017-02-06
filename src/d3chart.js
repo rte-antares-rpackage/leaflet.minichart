@@ -4,6 +4,8 @@
   var tinycolor = require("tinycolor2");
   var prettyNumbers = require("./prettyNumbers.js");
   var g = require("./geometry.js");
+  var Label = require("./tinycharts/label.js");
+  var Barchart = require("./tinycharts/Barchart.js");
 
   function toArray(x) {
     if (x.constructor !== Array) x = [x];
@@ -90,7 +92,7 @@
       labelPadding: 2,
       labelColor: "auto",
       labelText: null,
-      transitionTime: 750
+      transitionTime: 750,
     },
 
     /**
@@ -206,120 +208,115 @@
     },
 
     _drawBar: function(c, data, newChart, labels) {
+      // Clone options and modify some of them
+      var opts = JSON.parse(JSON.stringify(this.options));
+      opts.minValue = -1;
+      opts.maxValue = 1;
+      opts.height = opts.height * 2;
+      opts.colors = opts.colorPalette;
+      opts.labels = labels;
+
       if (newChart) {
-        // Draw a gray line that represent the 0
-        this._chart.append("line")
-          .attr("x1", - 3)
-          .attr("x2", this.options.width + 3)
-          .attr("style", "stroke:#999;stroke-width:1;");
-      } else {
-        this._chart.select("line")
-          .attr("x1", - 3)
-          .attr("x2", this.options.width + 3)
+        this._barchart = new Barchart(this._chart.node(), data, opts);
       }
+      this._chart
+        .attr("transform", "translate(" + (c.x - opts.width / 2) + "," + (c.y - opts.height / 2) + ")")
+        .transition()
+        .duration(opts.transitionTime)
+        .attr("opacity", opts.opacity);
+      this._barchart.update(data, opts);
 
       // D3 scale function
-      var scale = d3.scaleLinear()
-        .domain([0, 1])
-        .range([0, this.options.height]);
-
-      // D3 colors function
-      var colList = data.length == 1 ? [this.options.fillColor] : this.options.colorPalette;
-      var color = d3.scaleOrdinal(colList);
-
-      var barWidth = this.options.width / data.length;
-
-      // Set the position of the container
-      this._chart
-        .attr("transform", "translate(" + (c.x - this.options.width / 2) + "," + (c.y) + ")")
-        .transition()
-        .duration(this.options.transitionTime)
-        .attr("opacity", this.options.opacity);
-
-      // Display/ update data
-      var bar = this._chart.selectAll("rect").data(data);
-
-      bar.enter()
-        .append("rect")
-        .attr("class", "leaflet-clickable")
-        .attr("x", function(d, i) {return (i + 1) * barWidth})
-        .attr("y", function(d) {return 0})
-        .attr("width", 0)
-        .merge(bar)
-        .transition()
-        .duration(this.options.transitionTime)
-        .attr("width", barWidth)
-        .attr("x", function(d, i) {return i * barWidth})
-        .attr("y", function(d) {return d >= 0? -scale(d) : 0;})
-        .attr("height", function(d) {return Math.abs(scale(d))})
-        .attr("fill", function(d, i) {return color(i)});
-
-      bar.exit()
-        .transition()
-        .duration(this.options.transitionTime)
-        .attr("x", function(d, i) {return i * barWidth})
-        .attr("y", 0)
-        .attr("width", 0)
-        .attr("height", 0)
-        .remove();
-
-      // labels
-      if (labels) {
-        // color labels
-        var labelColor;
-        if (this.options.labelColor == "auto") {
-          labelColor = function(i) {
-            return tinycolor.mostReadable(color(i), ["white", "black"])._originalInput
-          }
-        } else {
-          labelColor = function(i) {return this.options.labelColor};
-        }
-
-        function labelPositionAndSize(el, options, barWidth, scale, d, i) {
-          var bbox = el._text.node().getBBox();
-
-          var ratioV = Math.min(options.labelMaxSize, Math.abs(scale(d))) / bbox.height;
-          var ratioH = (barWidth - 2 * options.labelPadding) / bbox.width;
-          el._scale = Math.min(ratioV, ratioH);
-          if (isNaN(el._scale) || !isFinite(el._scale)) {el._scale = 0}
-          var height = bbox.height * el._scale;
-          if (height < options.labelMinSize) {el._scale = 0}
-          var posy = d > 0? height / 2: -height / 2;
-
-          el._x = (i + 0.5) * barWidth;
-          el._y = posy - scale(d);
-        }
-
-        var labelsEl = this._chart.selectAll(".labels-container").data(data);
-        var self = this;
-        labelsEl.enter()
-          .append("g")
-          .attr("class", "labels-container")
-          .each(function(d, i) {
-            addOneLabel(this, self.options, labelColor(i));
-            this._text.text(labels[i]);
-            labelPositionAndSize(this, self.options, barWidth, scale, d, i)
-            this._container.attr("transform", "translate(" + this._x + "," + this._y + ")");
-            this._label.attr("transform", "scale(" + this._scale + ")");
-          })
-
-          .merge(labelsEl)
-          .each(function(d, i) {
-            this._text.text(labels[i]);
-            this._text.attr("fill", labelColor(i));
-            labelPositionAndSize(this, self.options, barWidth, scale, d, i)
-            this._label.attr("transform", "scale(" + this._scale + ")");
-          })
-          .transition()
-          .duration(this.options.transitionTime)
-          .attr("transform", function(d, i) {
-            return "translate(" + this._x + "," + this._y + ")";
-          });
-
-        labelsEl.exit().remove();
-      } else {
-        this._chart.selectAll("text").remove();
-      }
+      // var scale = d3.scaleLinear()
+      //   .domain([0, 1])
+      //   .range([0, this.options.height]);
+      //
+      // // D3 colors function
+      // var colList = data.length == 1 ? [this.options.fillColor] : this.options.colorPalette;
+      // var color = d3.scaleOrdinal(colList);
+      //
+      // var barWidth = this.options.width / data.length;
+      //
+      // // Set the position of the container
+      // this._chart
+      //   .attr("transform", "translate(" + (c.x - this.options.width / 2) + "," + (c.y) + ")")
+      //   .transition()
+      //   .duration(this.options.transitionTime)
+      //   .attr("opacity", this.options.opacity);
+      //
+      // // Display/ update data
+      // var bar = this._chart.selectAll("rect").data(data);
+      //
+      // bar.enter()
+      //   .append("rect")
+      //   .attr("class", "leaflet-clickable")
+      //   .attr("x", function(d, i) {return (i + 1) * barWidth})
+      //   .attr("y", function(d) {return 0})
+      //   .attr("width", 0)
+      //   .merge(bar)
+      //   .transition()
+      //   .duration(this.options.transitionTime)
+      //   .attr("width", barWidth)
+      //   .attr("x", function(d, i) {return i * barWidth})
+      //   .attr("y", function(d) {return d >= 0? -scale(d) : 0;})
+      //   .attr("height", function(d) {return Math.abs(scale(d))})
+      //   .attr("fill", function(d, i) {return color(i)});
+      //
+      // bar.exit()
+      //   .transition()
+      //   .duration(this.options.transitionTime)
+      //   .attr("x", function(d, i) {return i * barWidth})
+      //   .attr("y", 0)
+      //   .attr("width", 0)
+      //   .attr("height", 0)
+      //   .remove();
+      //
+      // // labels
+      // if (labels) {
+      //   // color labels
+      //   var labelColor;
+      //   if (this.options.labelColor == "auto") {
+      //     labelColor = function(i) {
+      //       return tinycolor.mostReadable(color(i), ["white", "black"])._originalInput
+      //     }
+      //   } else {
+      //     labelColor = function(i) {return this.options.labelColor};
+      //   }
+      //
+      //   function labelPositionAndSize(el, options, barWidth, scale, d, i) {
+      //     var bbox = el.innerSize();
+      //
+      //     var ratioV = Math.min(options.labelMaxSize, Math.abs(scale(d))) / bbox.height;
+      //     var ratioH = (barWidth - 2 * options.labelPadding) / bbox.width;
+      //     el.updateScale(Math.min(ratioV, ratioH), options.transitionTime);
+      //     var height = bbox.height * el._scale;
+      //     var posy = d > 0? height / 2: -height / 2;
+      //     el.updatePosition((i + 0.5) * barWidth,  posy - scale(d), options.transitionTime);
+      //   }
+      //
+      //   var labelsEl = this._chart.selectAll(".labels-container").data(data);
+      //   var self = this;
+      //   labelsEl.enter()
+      //     .append("g")
+      //     .attr("class", "labels-container")
+      //     .each(function(d, i) {
+      //       this._label = new Label(this, self.options.labelStyle, labelColor(i),
+      //                               self.options.labelMinSize, self.options.labelMaxSize)
+      //       this._label.updateText(labels[i]);
+      //       labelPositionAndSize(this._label, self.options, barWidth, scale, d, i)
+      //     })
+      //
+      //     .merge(labelsEl)
+      //     .each(function(d, i) {
+      //       this._label.updateText(labels[i]);
+      //       this._label._text.attr("fill", labelColor(i));
+      //       labelPositionAndSize(this._label, self.options, barWidth, scale, d, i)
+      //     });
+      //
+      //   labelsEl.exit().remove();
+      // } else {
+      //   this._chart.selectAll("text").remove();
+      // }
     },
 
     _drawPolar: function(c, data, type, labels) {

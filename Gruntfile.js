@@ -44,7 +44,7 @@ module.exports = function(grunt) {
     },
     watch: {
       source: {
-        files: ["src/*"],
+        files: ["src/**/*"],
         tasks: ['browserify', 'uglify']
       },
       doc: {
