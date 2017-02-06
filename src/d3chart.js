@@ -6,6 +6,7 @@
   var g = require("./geometry.js");
   var Label = require("./tinycharts/label.js");
   var Barchart = require("./tinycharts/Barchart.js");
+  var utils = require("./tinycharts/utils.js");
 
   function toArray(x) {
     if (x.constructor !== Array) x = [x];
@@ -112,7 +113,7 @@
       */
     initialize: function(center, options) {
       this._center = center;
-      L.Util.setOptions(this, options);
+      this.options = utils.mergeOptions(options, this.options);
       L.CircleMarker.prototype.initialize.call(
         this,
         center,
@@ -149,7 +150,7 @@
       */
     setOptions: function(options) {
       var newChart = options.type && options.type != this.options.type;
-      L.Util.setOptions(this, options);
+      this.options = utils.mergeOptions(options, this.options);
       this._redraw(newChart);
     },
 

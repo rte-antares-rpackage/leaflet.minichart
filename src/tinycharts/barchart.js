@@ -4,92 +4,99 @@
   var d3 = require("d3");
   var tinycolor = require("tinycolor2");
   var prettyNumbers = require("../prettyNumbers.js");
+  var utils = require("./utils.js");
   var Label = require("./label.js");
+  var Chart = require("./chart.js");
 
   module.exports = Barchart;
 
-  function mergeOptions(options, defaults) {
-    options = options || {};
-    defaults = defaults || {};
-    for (var opt in defaults) {
-      if (defaults.hasOwnProperty(opt) && !options.hasOwnProperty(opt)) {
-        options[opt] = defaults[opt];
-      }
-    }
-    return options;
-  }
+  // Barchart inherits from Chart
+  Barchart.prototype = Chart.prototype;
 
   function Barchart(el, data, options) {
-    var defaultOptions = {
+    // Default options
+    this._options = {
       width:60,
       height:60,
+      minValue: "auto",
+      maxValue: "auto",
       transitionTime: 750,
       colors: d3.schemeCategory10,
-      labelColor: "auto",
-      zeroLineStyle: "stroke:#999;stroke-width:1;"
+      labels: "none",
+      labelColors: "auto",
+      zeroLineStyle: "stroke:#999;stroke-width:1;",
+
     };
 
-    options = mergeOptions(options, defaultOptions)
+    // Call super constructor
+    Chart.call(this, el, data, options);
+
+    // Initialize the zero line
+    var scaleFun = d3.scaleLinear()
+      .domain([this._options.minValue, this._options.maxValue])
+      .range([this._options.height, 0]);
+
+    this._chart = this._container.append("g");
+    this._zeroLine = this._container.append("line")
+      .attr("x1", 0)
+      .attr("y1", scaleFun(0))
+      .attr("x2", this._options.width)
+      .attr("y2", scaleFun(0))
+      .attr("style", this._options.zeroLineStyle);
+
+    this._draw();
+  }
+
+  Barchart.prototype._processOptions = function(options) {
+    //options = Chart.prototype._processOptions.call(this, options);
+    options = utils.mergeOptions(options, this._options);
 
     // Set min value and max value if necessary.
-    if (!options.hasOwnProperty('minValue')) {
+    if (options.minValue === "auto") {
       var min = d3.min(data);
-      var max = d3.max(data);
+      var max = options.maxValue === "auto"? d3.max(data): options.maxValue;
 
       if (max > 0 && min > 0) options.minValue = 0;
       else options.minValue = min;
     }
 
-    if (!options.hasOwnProperty('maxValue')) {
-      var min = d3.min(data);
+    if (options.maxValue === "auto") {
+      var max = options.minValue === "auto"? d3.min(data): options.minValue;
       var max = d3.max(data);
 
       if (max < 0 && min < 0) options.maxValue = 0;
       else options.maxValue = max;
     }
 
-    // Initialize the zero line
-    var scaleFun = d3.scaleLinear()
-      .domain([0, 1])
-      .range([options.height, 0]);
+    // Convert parameters colors, labels and labelColors to functions
+    options.colorFun = utils.toFunction(options.colors);
 
-    this._container = d3.select(el).append("svg");
-    this._chart = this._container.append("g");
-    this._zeroLine = this._container.append("line")
-      .attr("x1", 0)
-      .attr("y1", scaleFun(0))
-      .attr("x2", options.width)
-      .attr("y2", scaleFun(0))
-      .attr("style", options.zeroLineStyle);
+    if (options.labels === "none") {
+      options.labelText = null;
+    } else if (options.labels === "auto") {
+      options.labelText = utils.toFunction(prettyNumbers(this._data));
+    }  else {
+      options.labelText = utils.toFunction(options.labels);
+    }
 
-    this.update(data, options);
-  }
+    if (options.labelColors === "auto") {
+      options.labelColorFun = function(d, i) {
+        return tinycolor.mostReadable(options.colorFun(d, i), ["white", "black"])._originalInput
+      };
+    } else {
+      options.labelColorFun = toFunction(options.labelColorFun);
+    }
 
-  Barchart.prototype.update = function(data, options) {
-    this._data = data;
-    this._options = mergeOptions(options, this._options);
-    this._draw();
-  }
 
-  Barchart.prototype.setData = function(data) {
-    this._data = data;
-    this._draw();
-  }
-
-  Barchart.prototype.setOptions = function(data) {
-    this._options = mergeOptions(options, this._options);
-    this._draw();
-  }
+    return options;
+  };
 
   Barchart.prototype._draw = function() {
     var self = this;
     var barWidth = (self._options.width - 6) / self._data.length;
     var scaleFun = d3.scaleLinear()
-      .domain([0, 1])
+      .domain([self._options.minValue, self._options.maxValue])
       .range([self._options.height, 0]);
-
-    var colorFun = d3.scaleOrdinal(self._options.colors);
-    self._colorFun = colorFun;
 
     // Update container size
     self._container
@@ -124,7 +131,7 @@
       .attr("x", function(d, i) {return i * barWidth + 3;})
       .attr("y", function(d) {return d >= 0? scaleFun(d) : scaleFun(0);})
       .attr("height", function(d) {return Math.abs(scaleFun(d) - scaleFun(0));})
-      .attr("fill", function(d, i) {return colorFun(i);});
+      .attr("fill", self._options.colorFun);
     // Remove bars
     bar.exit()
       .transition()
@@ -136,7 +143,7 @@
       .remove();
 
     // Add/ update labels
-    if (self._options.labels) {
+    if (self._options.labels !== "none") {
       self._drawLabels(barWidth, scaleFun);
     } else {
       self._chart.selectAll(".labels-container").remove();
@@ -145,15 +152,6 @@
 
   Barchart.prototype._drawLabels = function(barWidth, scale) {
     var self = this;
-
-    var labelColor;
-    if (this._options.labelColor == "auto") {
-      labelColor = function(i) {
-        return tinycolor.mostReadable(self._colorFun(i), ["white", "black"])._originalInput
-      }
-    } else {
-      labelColor = function(i) {return this._options.labelColor};
-    }
 
     function labelPositionAndSize(el, options, barWidth, scale, d, i) {
       var bbox = el.innerSize();
@@ -166,21 +164,21 @@
       el.updatePosition((i + 0.5) * barWidth + 3,  posy + scale(d), options.transitionTime);
     }
 
-    var labelsEl = this._chart.selectAll(".labels-container").data(this._data);
+    var labelsEl = self._chart.selectAll(".labels-container").data(self._data);
     labelsEl.enter()
       .append("g")
       .attr("class", "labels-container")
       .each(function(d, i) {
-        this._label = new Label(this, self._options.labelStyle, labelColor(i),
+        this._label = new Label(this, self._options.labelStyle, self._options.labelColorFun(d, i),
                                 self._options.labelMinSize, self._options.labelMaxSize)
-        this._label.updateText(self._options.labels[i]);
+        this._label.updateText(self._options.labelText(d, i));
         labelPositionAndSize(this._label, self._options, barWidth, scale, d, i)
       })
 
       .merge(labelsEl)
       .each(function(d, i) {
-        this._label.updateText(self._options.labels[i]);
-        this._label._text.attr("fill", labelColor(i));
+        this._label.updateText(self._options.labelText(d, i));
+        this._label._text.attr("fill", self._options.labelColorFun(d, i));
         labelPositionAndSize(this._label, self._options, barWidth, scale, d, i)
       });
 
