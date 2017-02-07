@@ -75,7 +75,40 @@
     return this;
   }
 
-  Label.prototype.fillRect = function(x, y, width, height, verticalAlign, horizontalAlign) {
+  Label.prototype.fillRect = function(x, y, width, height, padding,
+                                      hAlign, vAlign,
+                                      transitionTime) {
+      var bbox = this.innerSize();
+      this.updateScale(Math.min(
+        (width - 2 * padding) / bbox.width,
+        (Math.abs(height)) / bbox.height
+      ));
+
+      var lsize = this.size();
+      var lx, ly;
+      switch(vAlign) {
+        case "top":
+          ly = y + lsize.height / 2;
+          break;
+        case "center":
+          ly = y + (height) / 2;
+          break;
+        case "bottom":
+          ly = y + height - lsize.height / 2;
+      }
+
+      switch(hAlign) {
+        case "left":
+          lx = x + padding + lsize.width / 2;
+          break;
+        case "center":
+          lx = x + width / 2;
+          break;
+        case "right":
+          lx = x + width - padding - lsize.width / 2;
+      }
+
+      this.updatePosition(lx, ly, transitionTime);
 
     return this;
   }

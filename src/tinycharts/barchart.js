@@ -153,17 +153,6 @@
   Barchart.prototype._drawLabels = function(barWidth, scale) {
     var self = this;
 
-    function labelPositionAndSize(el, options, barWidth, scale, d, i) {
-      var bbox = el.innerSize();
-
-      var ratioV = Math.min(options.labelMaxSize, Math.abs(scale(d) - scale(0))) / bbox.height;
-      var ratioH = (barWidth - 2 * options.labelPadding) / bbox.width;
-      el.updateScale(Math.min(ratioV, ratioH), options.transitionTime);
-      var height = bbox.height * el._scale;
-      var posy = d > 0? height / 2: -height / 2;
-      el.updatePosition((i + 0.5) * barWidth + 3,  posy + scale(d), options.transitionTime);
-    }
-
     var labelsEl = self._chart.selectAll(".labels-container").data(self._data);
     labelsEl.enter()
       .append("g")
@@ -171,15 +160,25 @@
       .each(function(d, i) {
         this._label = new Label(this, self._options.labelStyle, self._options.labelColorFun(d, i),
                                 self._options.labelMinSize, self._options.labelMaxSize);
-        this._label.updateText(self._options.labelText(d, i));
-        labelPositionAndSize(this._label, self._options, barWidth, scale, d, i)
+        this._label
+          .updateText(self._options.labelText(d, i))
+          .fillRect(i * barWidth + 3, scale(0),
+                    barWidth, 0,
+                    self._options.labelPadding,
+                     "center", d >= 0? "top": "bottom",
+                    0);
       })
 
       .merge(labelsEl)
       .each(function(d, i) {
-        this._label.updateText(self._options.labelText(d, i));
+        this._label
+          .updateText(self._options.labelText(d, i))
+          .fillRect(i * barWidth + 3, d >= 0? scale(d) : scale(0),
+                    barWidth, Math.abs(scale(d) - scale(0)),
+                    self._options.labelPadding,
+                     "center", d >= 0? "top": "bottom",
+                    self._options.transitionTime);
         this._label._text.attr("fill", self._options.labelColorFun(d, i));
-        labelPositionAndSize(this._label, self._options, barWidth, scale, d, i)
       });
 
     labelsEl.exit().remove();

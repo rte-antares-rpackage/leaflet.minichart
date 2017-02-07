@@ -216,9 +216,7 @@
       opts.colors = opts.colorPalette;
       opts.labels = labels;
 
-      console.log(newChart);
       if (newChart === true) {
-
         this._barchart = new Barchart(this._chart.node(), data, opts);
       }
       this._chart
