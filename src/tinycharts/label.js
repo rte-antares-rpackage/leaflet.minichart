@@ -2,6 +2,7 @@
   'use strict';
 
   var d3 = require("d3");
+  var g = require("../geometry.js")
 
   module.exports = Label;
 
@@ -111,5 +112,46 @@
       this.updatePosition(lx, ly, transitionTime);
 
     return this;
+  }
+
+  Label.prototype.fillCircle = function(radius, transitionTime) {
+    this.updatePosition(0, 0, transitionTime);
+
+    var bbox = this.innerSize();
+    var ratio = bbox.height / bbox.width;
+
+    var maxHeight = radius * 2 * Math.cos(Math.PI/2 - Math.atan(ratio))
+    this.updateScale(maxHeight / bbox.height, transitionTime);
+  }
+
+  Label.prototype.fillSlice = function(arc, radius, d, transitionTime) {
+    var c = arc.centroid(d);
+    this.updatePosition(c[0], c[1], transitionTime);
+
+    var bbox = this.innerSize();
+    var ratio = bbox.height / bbox.width;
+
+    // Get maximal scale so that label fits in the slice.
+    var diag1 = new g.Line(c[1] - ratio * c[0], ratio);
+    var diag2 = new g.Line(c[1] + ratio * c[0], -ratio);
+    var limit1 = new g.Line(0, Math.tan(d.startAngle + Math.PI/2));
+    var limit2 = new g.Line(0, Math.tan(d.endAngle + Math.PI/2));
+
+    // Get all intersection points
+    var intersects = [];
+    intersects = intersects.concat(g.intersectionOfTwoLines(diag1, limit1));
+    intersects = intersects.concat(g.intersectionOfTwoLines(diag1, limit2));
+    intersects = intersects.concat(g.intersectionLineAndCircle(diag1, radius));
+    intersects = intersects.concat(g.intersectionOfTwoLines(diag2, limit1));
+    intersects = intersects.concat(g.intersectionOfTwoLines(diag2, limit2));
+    intersects = intersects.concat(g.intersectionLineAndCircle(diag2, radius));
+
+    // Compute distance between all these points and take the minimum
+    var center = new g.Point(c[0], c[1]);
+    var distances = intersects.map(function(x) {return g.distance(center, x)});
+    var minDist = d3.min(distances);
+    var actualDist = Math.sqrt( Math.pow(bbox.height / 2, 2) + Math.pow(bbox.width / 2, 2));
+
+    this.updateScale(minDist / actualDist, transitionTime);
   }
 }());
