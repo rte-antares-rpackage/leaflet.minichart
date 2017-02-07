@@ -44,6 +44,7 @@
       oldSize.height / newSize.height
     );
     this.updateScale(this._scale * scale, 0);
+    return this;
   }
 
   Label.prototype.updatePosition = function(x, y, transitionTime) {
@@ -51,6 +52,7 @@
       .transition()
       .duration(transitionTime || 0)
       .attr("transform", "translate(" + x + "," + y + ")");
+      return this;
   }
 
   Label.prototype.updateScale = function(newScale, transitionTime) {
@@ -69,5 +71,12 @@
       .duration(transitionTime || 0)
       .attr("transform", "scale(" + newScale + ")");
     this._scale = newScale;
+
+    return this;
+  }
+
+  Label.prototype.fillRect = function(x, y, width, height, verticalAlign, horizontalAlign) {
+
+    return this;
   }
 }());

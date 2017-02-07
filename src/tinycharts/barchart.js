@@ -170,7 +170,7 @@
       .attr("class", "labels-container")
       .each(function(d, i) {
         this._label = new Label(this, self._options.labelStyle, self._options.labelColorFun(d, i),
-                                self._options.labelMinSize, self._options.labelMaxSize)
+                                self._options.labelMinSize, self._options.labelMaxSize);
         this._label.updateText(self._options.labelText(d, i));
         labelPositionAndSize(this._label, self._options, barWidth, scale, d, i)
       })
