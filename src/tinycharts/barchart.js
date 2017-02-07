@@ -85,21 +85,20 @@
       .attr("style", self._options.zeroLineStyle);
 
     // Update bars
-    var bar = self._chart.selectAll("rect").data(self._data);
+    var bar = self._chart.selectAll("path").data(self._data);
     // Add new bars
+    function rectPath(x, y, w, h) {
+      return ("M" + x + " " + y + "l" + w + " 0l0 " + h + "l" + (-w) + " 0Z")
+    }
+
     bar.enter()
-      .append("rect")
-      .attr("x", function(d, i) {return (i + 1) * barWidth + 3})
-      .attr("y", function(d) {return scaleFun(0)})
-      .attr("width", 0)
+      .append("path")
+      .attr("d", function(d, i) {return rectPath((i + 1) * barWidth + 3, scaleFun(0), 0, 0)})
     // Update bars
       .merge(bar)
       .transition()
       .duration(self._options.transitionTime)
-      .attr("width", barWidth)
-      .attr("x", function(d, i) {return i * barWidth + 3;})
-      .attr("y", function(d) {return d >= 0? scaleFun(d) : scaleFun(0);})
-      .attr("height", function(d) {return Math.abs(scaleFun(d) - scaleFun(0));})
+      .attr("d", function(d, i) {return rectPath(i * barWidth + 3, scaleFun(0), barWidth, scaleFun(d) - scaleFun(0))})
       .attr("fill", self._options.colorFun);
     // Remove bars
     bar.exit()
