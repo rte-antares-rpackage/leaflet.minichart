@@ -12,7 +12,6 @@
   function Barchart(el, data, options) {
     // Default options
     var defaults = {
-      height:60,
       minValue: "auto",
       maxValue: "auto",
       zeroLineStyle: "stroke:#333;stroke-width:1;"
@@ -26,7 +25,6 @@
       .domain([this._options.minValue, this._options.maxValue])
       .range([this._options.height, 0]);
 
-    this._chart = this._container.append("g");
     this._zeroLine = this._container.append("line")
       .attr("x1", 0)
       .attr("y1", scaleFun(0))
@@ -62,17 +60,12 @@
 
   Barchart.prototype._draw = function() {
     var self = this;
+    Chart.prototype._draw.call(this);
+
     var barWidth = (self._options.width - 6) / self._data.length;
     var scaleFun = d3.scaleLinear()
       .domain([self._options.minValue, self._options.maxValue])
       .range([self._options.height, 0]);
-
-    // Update container size
-    self._container
-      .transition()
-      .duration(self._options.transitionTime)
-      .attr("width", self._options.width)
-      .attr("height", self._options.height);
 
     // Update the zero line
     self._zeroLine

@@ -12,17 +12,18 @@
   function Chart(el, data, options, defaults) {
     this._options = {
       width:60,
+      height: 60,
       transitionTime: 750,
       colors: d3.schemeCategory10,
       labels: "none",
       labelColors: "auto"
     };
 
-    this.options = utils.mergeOptions(this._options, defaults || {});
-
-    this._container = d3.select(el).append("svg");
+    this._options = utils.mergeOptions(this._options, defaults || {});
     this._options = this._processOptions(options);
     this._data = data;
+    this._container = d3.select(el).append("svg");
+    this._chart = this._container.append("g");
   }
 
   Chart.prototype.update = function(data, options) {
@@ -41,7 +42,15 @@
     this._draw();
   };
 
-  Chart.prototype._draw = function() {};
+  Chart.prototype._draw = function() {
+    var self = this;
+    // Update container size
+    self._container
+      .transition()
+      .duration(self._options.transitionTime)
+      .attr("width", self._options.width)
+      .attr("height", self._options.height);
+  };
 
   Chart.prototype._processOptions = function(options) {
     options = utils.mergeOptions(options, this._options);
