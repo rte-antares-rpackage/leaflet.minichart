@@ -11,7 +11,7 @@
   module.exports = Barchart;
 
   // Barchart inherits from Chart
-  Barchart.prototype = Chart.prototype;
+  Barchart.prototype = Object.create(Chart.prototype);
 
   function Barchart(el, data, options) {
     // Default options
@@ -24,8 +24,7 @@
       colors: d3.schemeCategory10,
       labels: "none",
       labelColors: "auto",
-      zeroLineStyle: "stroke:#999;stroke-width:1;",
-
+      zeroLineStyle: "stroke:#333;stroke-width:1;"
     };
 
     // Call super constructor
@@ -49,7 +48,7 @@
 
   Barchart.prototype._processOptions = function(options) {
     //options = Chart.prototype._processOptions.call(this, options);
-    options = utils.mergeOptions(options, this._options);
+    options = Chart.prototype._processOptions.call(this, options, this._options);
 
     // Set min value and max value if necessary.
     if (options.minValue === "auto") {
@@ -67,26 +66,6 @@
       if (max < 0 && min < 0) options.maxValue = 0;
       else options.maxValue = max;
     }
-
-    // Convert parameters colors, labels and labelColors to functions
-    options.colorFun = utils.toFunction(options.colors);
-
-    if (options.labels === "none") {
-      options.labelText = null;
-    } else if (options.labels === "auto") {
-      options.labelText = utils.toFunction(prettyNumbers(this._data));
-    }  else {
-      options.labelText = utils.toFunction(options.labels);
-    }
-
-    if (options.labelColors === "auto") {
-      options.labelColorFun = function(d, i) {
-        return tinycolor.mostReadable(options.colorFun(d, i), ["white", "black"])._originalInput
-      };
-    } else {
-      options.labelColorFun = toFunction(options.labelColorFun);
-    }
-
 
     return options;
   };
