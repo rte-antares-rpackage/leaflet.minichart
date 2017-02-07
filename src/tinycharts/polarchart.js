@@ -41,7 +41,6 @@
     options.radius = radiusFun;
     options.pie = pie;
     options. arc = arc;
-
     return options;
   }
 
@@ -83,6 +82,31 @@
         return self._options.arc(i(t));
       };
     }
+
+    // Add/update labels
+    // function(arc, radiusFun, d, transitionTime)
+    var initLabel, updateLabel;
+    if (this._data.length > 1) {
+      var data = this._options.pie(this._data);
+      initLabel = function(label, d, i) {
+        label.fillSlice(self._options.arc, self._options.radius(d), data[i], 0);
+      }
+
+      updateLabel = function(label, d, i) {
+        label.fillSlice(self._options.arc, self._options.radius(d), data[i],
+                        self._options.transitionTime);
+      }
+    } else {
+      initLabel = function(label, d, i) {
+        label.fillCircle(self._options.radius(d), 0);
+      }
+
+      updateLabel = function(label, d, i) {
+        label.fillCircle(self._options.radius(d), self._options.transitionTime);
+      }
+    }
+
+    this._drawLabels(initLabel, updateLabel);
   }
 
 }());
