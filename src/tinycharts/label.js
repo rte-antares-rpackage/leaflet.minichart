@@ -82,7 +82,7 @@
       this.updateScale(Math.min(
         (width - 2 * padding) / bbox.width,
         (Math.abs(height)) / bbox.height
-      ));
+      ), transitionTime);
 
       var lsize = this.size();
       var lx, ly;

@@ -2,10 +2,6 @@
   'use strict';
 
   var d3 = require("d3");
-  var tinycolor = require("tinycolor2");
-  var prettyNumbers = require("../prettyNumbers.js");
-  var utils = require("./utils.js");
-  var Label = require("./label.js");
   var Chart = require("./chart.js");
 
   module.exports = Barchart;
@@ -15,20 +11,15 @@
 
   function Barchart(el, data, options) {
     // Default options
-    this._options = {
-      width:60,
+    var defaults = {
       height:60,
       minValue: "auto",
       maxValue: "auto",
-      transitionTime: 750,
-      colors: d3.schemeCategory10,
-      labels: "none",
-      labelColors: "auto",
       zeroLineStyle: "stroke:#333;stroke-width:1;"
     };
 
     // Call super constructor
-    Chart.call(this, el, data, options);
+    Chart.call(this, el, data, options, defaults);
 
     // Initialize the zero line
     var scaleFun = d3.scaleLinear()
@@ -47,7 +38,6 @@
   }
 
   Barchart.prototype._processOptions = function(options) {
-    //options = Chart.prototype._processOptions.call(this, options);
     options = Chart.prototype._processOptions.call(this, options, this._options);
 
     // Set min value and max value if necessary.
@@ -122,44 +112,25 @@
       .remove();
 
     // Add/ update labels
-    if (self._options.labels !== "none") {
-      self._drawLabels(barWidth, scaleFun);
-    } else {
-      self._chart.selectAll(".labels-container").remove();
+    function initLabel(label, d, i) {
+      label.fillRect(
+        i * barWidth + 3, scaleFun(0),
+        barWidth, 0,
+        self._options.labelPadding,
+        "center", d >= 0? "top": "bottom",
+        0
+      );
     }
-  }
 
-  Barchart.prototype._drawLabels = function(barWidth, scale) {
-    var self = this;
+    function updateLabel(label, d, i) {
+      label.fillRect(
+        i * barWidth + 3, d >= 0? scaleFun(d) : scaleFun(0),
+        barWidth, Math.abs(scaleFun(d) - scaleFun(0)),
+        self._options.labelPadding,
+        "center", d >= 0? "top": "bottom",
+        self._options.transitionTime);
+    }
 
-    var labelsEl = self._chart.selectAll(".labels-container").data(self._data);
-    labelsEl.enter()
-      .append("g")
-      .attr("class", "labels-container")
-      .each(function(d, i) {
-        this._label = new Label(this, self._options.labelStyle, self._options.labelColorFun(d, i),
-                                self._options.labelMinSize, self._options.labelMaxSize);
-        this._label
-          .updateText(self._options.labelText(d, i))
-          .fillRect(i * barWidth + 3, scale(0),
-                    barWidth, 0,
-                    self._options.labelPadding,
-                     "center", d >= 0? "top": "bottom",
-                    0);
-      })
-
-      .merge(labelsEl)
-      .each(function(d, i) {
-        this._label
-          .updateText(self._options.labelText(d, i))
-          .fillRect(i * barWidth + 3, d >= 0? scale(d) : scale(0),
-                    barWidth, Math.abs(scale(d) - scale(0)),
-                    self._options.labelPadding,
-                     "center", d >= 0? "top": "bottom",
-                    self._options.transitionTime);
-        this._label._text.attr("fill", self._options.labelColorFun(d, i));
-      });
-
-    labelsEl.exit().remove();
+    this._drawLabels(initLabel, updateLabel);
   }
 }());

@@ -1,14 +1,25 @@
 (function() {
   'use strict';
 
-  var utils = require("./utils.js");
-  var tinycolor = require("tinycolor2");
-  var prettyNumbers = require("../prettyNumbers.js");
   var d3 = require("d3");
+  var tinycolor = require("tinycolor2");
+  var utils = require("./utils.js");
+  var prettyNumbers = require("../prettyNumbers.js");
+  var Label = require("./label.js")
 
   module.exports = Chart;
 
-  function Chart(el, data, options) {
+  function Chart(el, data, options, defaults) {
+    this._options = {
+      width:60,
+      transitionTime: 750,
+      colors: d3.schemeCategory10,
+      labels: "none",
+      labelColors: "auto"
+    };
+
+    this.options = utils.mergeOptions(this._options, defaults || {});
+
     this._container = d3.select(el).append("svg");
     this._options = this._processOptions(options);
     this._data = data;
@@ -55,6 +66,36 @@
     }
 
     return options;
+  }
+
+  Chart.prototype._drawLabels = function(initFun, updateFun) {
+    var self = this;
+
+    if (self._options.labels === "none") {
+      self._chart.selectAll(".labels-container").remove();
+      return;
+    }
+
+
+    self._labels = self._chart.selectAll(".labels-container").data(self._data);
+    self._labels.enter()
+      .append("g")
+      .attr("class", "labels-container")
+      .each(function(d, i) {
+        this._label = new Label(this, self._options.labelStyle, self._options.labelColorFun(d, i),
+                                self._options.labelMinSize, self._options.labelMaxSize);
+        this._label.updateText(self._options.labelText(d, i))
+        initFun(this._label, d, i);
+      })
+
+      .merge(self._labels)
+      .each(function(d, i) {
+        this._label.updateText(self._options.labelText(d, i));
+        this._label._text.attr("fill", self._options.labelColorFun(d, i));
+        updateFun(this._label, d, i);
+      });
+
+    self._labels.exit().remove();
   }
 
 }());
