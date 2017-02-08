@@ -19,6 +19,9 @@
       colors: d3.schemeCategory10,
       labels: "none",
       labelColors: "auto",
+      labelMinSize: 8,
+      labelMaxSize: 24,
+      labelPadding: 2,
       labelClass: "",
       shapeClass: ""
     };

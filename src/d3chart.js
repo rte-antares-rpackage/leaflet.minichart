@@ -1,31 +1,10 @@
 // Copyright © 2016 RTE Réseau de transport d’électricité
 (function() {
   var d3 = require("d3");
-  var prettyNumbers = require("./prettyNumbers.js");
-  var Barchart = require("./tinycharts/Barchart.js");
-  var Polarchart = require("./tinycharts/Polarchart.js");
-
-  function toArray(x) {
-    if (x.constructor !== Array) x = [x];
-    return x;
-  }
-
-  function addOneLabel(el, options, color) {
-    el._container = d3.select(el);
-    el._label = el._container.append("g")
-      .attr("class", "label");
-
-    el._text = el._label.append("text")
-      .attr("class", "leaflet-clickable")
-      .attr("dy", "0.35em")
-      .attr("text-anchor", "middle")
-      .attr("opacity", 1)
-      .attr("style", options.labelStyle)
-      .attr("fill", color)
-  }
+  var tinycharts = require("./tinycharts/tinycharts.js");
+  var utils = require("./tinycharts/utils.js");
 
   L.D3chart = L.CircleMarker.extend({
-
     /** Options used to initialize/update a D3chart object.
       * @typedef {object} D3chartOptions
       * @memberOf 'L.D3chart'
@@ -77,22 +56,19 @@
     options: {
       type: "bar",
       data: [1],
-      maxValues: [1],
-      fillColor: "#4281e5",
-      colorPalette: d3.schemeCategory10,
+      maxValue: "auto",
+      colors: d3.schemeCategory10,
+      opacity: 1,
       width: 60,
       height: 60,
       opacity: 1,
-      showLabels: false,
-      labelStyle: "font-family:sans-serif",
+      labels:"none",
       labelMinSize: 8,
       labelMaxSize: 24,
       labelPadding: 2,
       labelColor: "auto",
-      labelText: null,
       transitionTime: 750,
-      labelClass: "leaflet-clickable",
-      shapeClass: "leaflet-clickable"
+      labelStyle: "font-family:sans-serif",
     },
 
     /**
@@ -112,7 +88,7 @@
       */
     initialize: function(center, options) {
       this._center = center;
-      L.Util.setOptions(this, options);
+      this.options = utils.mergeOptions(options, this.options);
       L.CircleMarker.prototype.initialize.call(
         this,
         center,
@@ -148,100 +124,107 @@
       */
     setOptions: function(options) {
       var newChart = options.type && options.type != this.options.type;
-      L.Util.setOptions(this, options);
+      this.options = utils.mergeOptions(options, this.options);
       this._redraw(newChart);
     },
 
     _redraw: function(newChart) {
-      // If necessary remove all elements of the previous chart
-      if (newChart === true) {
-        this._chart.selectAll("*").remove();
-      }
-
-      // Coordinates of the center in the svg frame
+      // Move container on the map
       var c = this._map.latLngToLayerPoint(this._center);
+      this._chart
+        .attr("transform", "translate(" + (c.x - this.options.width / 2) + "," + (c.y - this.options.height / 2) + ")")
+        .transition()
+        .duration(this.options.transitionTime)
+        .attr("opacity", this.options.opacity);
 
       // prepare data
-      this.options.data = toArray(this.options.data);
-      this.options.maxValues = toArray(this.options.maxValues);
-
-      var max = this.options.maxValues;
       var data = this.options.data;
+      data = utils.toArray(data);
       for (var i = 0; i < data.length; i++) {
         if (isNaN(data[i]) || !isFinite(data[i])) data[i] = 0;
       }
+
+      // Max absolute value for each variable
+      var max = this.options.maxValues;
+      if (max === "auto") {
+        max = Math.max(
+          d3.max(data),
+          Math.abs(d3.min(data))
+        )
+      }
+      max = utils.toArray(max);
+
       if(max.length !== 1 && max.length != data.length) {
         throw new Error("'maxValues' should be a single number or have same length as 'data'");
       }
-      dataScaled = []
-      for (var i = 0; i < data.length; i++) {
-        dataScaled.push(data[i] / max[i % max.length]);
-      }
 
-      // Prepare labels
-      if (!this.options.showLabels) {
-        var labels = null;
-      } else if (this.options.labelText == null) {
-        var labels = prettyNumbers(data)
+      // Scale data. This step is essential to have different scales for each
+      // variable. Only relevant if chart is not a pie/
+      var dataScaled = [];
+
+      if (this.options.type == "pie") {
+        dataScaled = data;
       } else {
-        labels = toArray(this.options.labelText);
-        if (labels.length != data.length) {
-          throw new Error("Custom labels must have same length as data")
+        for (var i = 0; i < data.length; i++) {
+          dataScaled.push(data[i] / max[i % max.length]);
         }
       }
 
+      // Prepare labels
+      var labels = this.options.labels;
+      if (labels === "auto") {
+        labels = utils.prettyNumbers(data);
+      } else if (labels != "none") {
+        labelFun = utils.toFunction(labels);
+        labels = function(d, i) {
+          labelFun(data[i], i);
+        }
+      }
+
+      // Generator function
+      var generator, type;
       switch(this.options.type) {
         case "bar":
-          this._drawBar(c, dataScaled, newChart, labels);
+          generator = tinycharts.Barchart;
           break;
         case "pie":
-          this._drawPolar(c, dataScaled, newChart, labels, "pie");
+          generator = tinycharts.Piechart;
           break;
         case "polar-radius":
-          this._drawPolar(c, dataScaled, newChart, labels, "radius");
+          generator = tinycharts.Polarchart;
+          type = "radius";
           break;
         case "polar-area":
-          this._drawPolar(c, dataScaled, newChart, labels, "area");
+          generator = tinycharts.Polarchart;
+          type = "area";
           break;
       }
-    },
 
-    _drawBar: function(c, data, newChart, labels) {
-      // Clone options and modify some of them
-      var opts = JSON.parse(JSON.stringify(this.options));
-      opts.minValue = -1;
-      opts.maxValue = 1;
-      opts.height = opts.height * 2;
-      opts.colors = opts.colorPalette;
-      opts.labels = labels;
+      // Graphical options for the generator function
+      var chartOpts = {
+        width: this.options.width,
+        height: this.options.height * 2, // Used only if type = "bar"
+        colors: this.options.colors,
+        type: type,
+        transitionTime: this.options.transitionTime,
+        minValue: -1,
+        maxValue:1,
+        labels: labels,
+        labelColors: this.options.labelColor,
+        labelMinSize: this.options.labelMinSize,
+        labelMaxSize: this.options.labelMaxSize,
+        labelPadding: this.options.labelPadding,
+        labelClass: "leaflet-clickable",
+        shapeClass: "leaflet-clickable"
+      };
 
+      // Create of update chart
       if (newChart === true) {
-        this._barchart = new Barchart(this._chart.node(), data, opts);
+        this._chart.selectAll("*").remove();
+        this._chartObject = new generator(this._chart.node(), dataScaled, chartOpts);
+      } else {
+        this._chartObject.update(dataScaled, chartOpts);
       }
-      this._chart
-        .attr("transform", "translate(" + (c.x - opts.width / 2) + "," + (c.y - opts.height / 2) + ")")
-        .transition()
-        .duration(opts.transitionTime)
-        .attr("opacity", opts.opacity);
-      this._barchart.update(data, opts);
-    },
-
-    _drawPolar: function(c, data, newChart, labels, type) {
-      var opts = JSON.parse(JSON.stringify(this.options));
-      opts.type = type;
-      opts.colors = opts.colorPalette;
-      opts.maxValue = 1;
-      opts.labels = labels;
-
-      if (newChart === true) {
-        this._polarchart = new Polarchart(this._chart.node(), data, opts);
-      }
-      this._chart
-        .attr("transform", "translate(" + (c.x - opts.width / 2) + "," + (c.y - opts.width / 2) + ")")
-        .transition()
-        .duration(opts.transitionTime)
-        .attr("opacity", opts.opacity);
-      this._polarchart.update(data, opts);
     }
   });
 
