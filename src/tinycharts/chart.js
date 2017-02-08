@@ -16,7 +16,9 @@
       transitionTime: 750,
       colors: d3.schemeCategory10,
       labels: "none",
-      labelColors: "auto"
+      labelColors: "auto",
+      labelClass: "",
+      shapeClass: ""
     };
 
     this._options = utils.mergeOptions(this._options, defaults || {});
@@ -57,6 +59,8 @@
 
     // Convert parameters colors, labels and labelColors to functions
     options.colorFun = utils.toFunction(options.colors);
+    options.labelClass = utils.toFunction(options.labelClass);
+    options.shapeClass = utils.toFunction(options.shapeClass);
 
     if (options.labels === "none") {
       options.labelText = null;
@@ -100,7 +104,9 @@
       .merge(self._labels)
       .each(function(d, i) {
         this._label.updateText(self._options.labelText(d, i));
-        this._label._text.attr("fill", self._options.labelColorFun(d, i));
+        this._label._text
+          .attr("fill", self._options.labelColorFun(d, i))
+          .attr("class", self._options.labelClass(d, i));
         updateFun(this._label, d, i);
       });
 

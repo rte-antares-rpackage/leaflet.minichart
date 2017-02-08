@@ -89,6 +89,7 @@
       .attr("d", function(d, i) {return rectPath((i + 1) * barWidth + 3, scaleFun(0), 0, 0)})
     // Update bars
       .merge(bar)
+      .attr("class", self._options.shapeClass)
       .transition()
       .duration(self._options.transitionTime)
       .attr("d", function(d, i) {return rectPath(i * barWidth + 3, scaleFun(0), barWidth, scaleFun(d) - scaleFun(0))})

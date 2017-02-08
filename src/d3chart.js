@@ -1,11 +1,9 @@
 // Copyright © 2016 RTE Réseau de transport d’électricité
 (function() {
   var d3 = require("d3");
-  var tinycolor = require("tinycolor2");
   var prettyNumbers = require("./prettyNumbers.js");
-  var g = require("./geometry.js");
-  var Label = require("./tinycharts/label.js");
   var Barchart = require("./tinycharts/Barchart.js");
+  var Polarchart = require("./tinycharts/Polarchart.js");
 
   function toArray(x) {
     if (x.constructor !== Array) x = [x];
@@ -93,6 +91,8 @@
       labelColor: "auto",
       labelText: null,
       transitionTime: 750,
+      labelClass: "leaflet-clickable",
+      shapeClass: "leaflet-clickable"
     },
 
     /**
@@ -124,7 +124,6 @@
       L.CircleMarker.prototype.onAdd.call(this, map);
       // Change class of container so that the element hides when zooming
       var container = this._container || this._renderer._container;
-
       container.setAttribute("class", "leaflet-zoom-hide");
 
       // create the svg element that holds the chart
@@ -196,13 +195,13 @@
           this._drawBar(c, dataScaled, newChart, labels);
           break;
         case "pie":
-          this._drawPolar(c, dataScaled, "angle", labels);
+          this._drawPolar(c, dataScaled, newChart, labels, "pie");
           break;
         case "polar-radius":
-          this._drawPolar(c, dataScaled, "radius", labels);
+          this._drawPolar(c, dataScaled, newChart, labels, "radius");
           break;
         case "polar-area":
-          this._drawPolar(c, dataScaled, "area", labels);
+          this._drawPolar(c, dataScaled, newChart, labels, "area");
           break;
       }
     },
@@ -225,249 +224,24 @@
         .duration(opts.transitionTime)
         .attr("opacity", opts.opacity);
       this._barchart.update(data, opts);
-
-      // D3 scale function
-      // var scale = d3.scaleLinear()
-      //   .domain([0, 1])
-      //   .range([0, this.options.height]);
-      //
-      // // D3 colors function
-      // var colList = data.length == 1 ? [this.options.fillColor] : this.options.colorPalette;
-      // var color = d3.scaleOrdinal(colList);
-      //
-      // var barWidth = this.options.width / data.length;
-      //
-      // // Set the position of the container
-      // this._chart
-      //   .attr("transform", "translate(" + (c.x - this.options.width / 2) + "," + (c.y) + ")")
-      //   .transition()
-      //   .duration(this.options.transitionTime)
-      //   .attr("opacity", this.options.opacity);
-      //
-      // // Display/ update data
-      // var bar = this._chart.selectAll("rect").data(data);
-      //
-      // bar.enter()
-      //   .append("rect")
-      //   .attr("class", "leaflet-clickable")
-      //   .attr("x", function(d, i) {return (i + 1) * barWidth})
-      //   .attr("y", function(d) {return 0})
-      //   .attr("width", 0)
-      //   .merge(bar)
-      //   .transition()
-      //   .duration(this.options.transitionTime)
-      //   .attr("width", barWidth)
-      //   .attr("x", function(d, i) {return i * barWidth})
-      //   .attr("y", function(d) {return d >= 0? -scale(d) : 0;})
-      //   .attr("height", function(d) {return Math.abs(scale(d))})
-      //   .attr("fill", function(d, i) {return color(i)});
-      //
-      // bar.exit()
-      //   .transition()
-      //   .duration(this.options.transitionTime)
-      //   .attr("x", function(d, i) {return i * barWidth})
-      //   .attr("y", 0)
-      //   .attr("width", 0)
-      //   .attr("height", 0)
-      //   .remove();
-      //
-      // // labels
-      // if (labels) {
-      //   // color labels
-      //   var labelColor;
-      //   if (this.options.labelColor == "auto") {
-      //     labelColor = function(i) {
-      //       return tinycolor.mostReadable(color(i), ["white", "black"])._originalInput
-      //     }
-      //   } else {
-      //     labelColor = function(i) {return this.options.labelColor};
-      //   }
-      //
-      //   function labelPositionAndSize(el, options, barWidth, scale, d, i) {
-      //     var bbox = el.innerSize();
-      //
-      //     var ratioV = Math.min(options.labelMaxSize, Math.abs(scale(d))) / bbox.height;
-      //     var ratioH = (barWidth - 2 * options.labelPadding) / bbox.width;
-      //     el.updateScale(Math.min(ratioV, ratioH), options.transitionTime);
-      //     var height = bbox.height * el._scale;
-      //     var posy = d > 0? height / 2: -height / 2;
-      //     el.updatePosition((i + 0.5) * barWidth,  posy - scale(d), options.transitionTime);
-      //   }
-      //
-      //   var labelsEl = this._chart.selectAll(".labels-container").data(data);
-      //   var self = this;
-      //   labelsEl.enter()
-      //     .append("g")
-      //     .attr("class", "labels-container")
-      //     .each(function(d, i) {
-      //       this._label = new Label(this, self.options.labelStyle, labelColor(i),
-      //                               self.options.labelMinSize, self.options.labelMaxSize)
-      //       this._label.updateText(labels[i]);
-      //       labelPositionAndSize(this._label, self.options, barWidth, scale, d, i)
-      //     })
-      //
-      //     .merge(labelsEl)
-      //     .each(function(d, i) {
-      //       this._label.updateText(labels[i]);
-      //       this._label._text.attr("fill", labelColor(i));
-      //       labelPositionAndSize(this._label, self.options, barWidth, scale, d, i)
-      //     });
-      //
-      //   labelsEl.exit().remove();
-      // } else {
-      //   this._chart.selectAll("text").remove();
-      // }
     },
 
-    _drawPolar: function(c, data, type, labels) {
-      // Set Position of the container
-      this._chart.attr("transform", "translate(" + c.x + "," + c.y + ")")
+    _drawPolar: function(c, data, newChart, labels, type) {
+      var opts = JSON.parse(JSON.stringify(this.options));
+      opts.type = type;
+      opts.colors = opts.colorPalette;
+      opts.maxValue = 1;
+      opts.labels = labels;
+
+      if (newChart === true) {
+        this._polarchart = new Polarchart(this._chart.node(), data, opts);
+      }
+      this._chart
+        .attr("transform", "translate(" + (c.x - opts.width / 2) + "," + (c.y - opts.width / 2) + ")")
         .transition()
-        .duration(this.options.transitionTime)
-        .attr("opacity", this.options.opacity);
-
-      // Draw polar area chart
-      var radius = this.options.width / 2;
-      var pie = d3.pie().sort(null);
-      var arc = d3.arc().innerRadius(0);
-
-      if (type == "angle") {
-        var scale = function(d) {return radius}
-        pie.value(function(d) {return d});
-      } else {
-        var scale = type == "radius" ? d3.scaleLinear() : d3.scalePow().exponent(0.5);
-        scale.range([0, radius]);
-        pie.value(function(d) {return 1});
-      }
-      arc.outerRadius(function(d, i) {return scale(d.data)});
-
-      var colList = data.length == 1 ? [this.options.fillColor] : this.options.colorPalette;
-      var color = d3.scaleOrdinal(colList);
-
-      // redraw the polar chart
-      var slices = this._chart.selectAll("path").data(pie(data));
-      slices.enter()
-        .append("path")
-        .attr("class", "leaflet-clickable")
-        .attr("d", arc)
-        .attr("fill", function(d, i) {return color(i)})
-        .each(function(d) {
-          if (data.length == 1) this._current = {startAngle:d.startAngle, endAngle:d.endAngle, data:0}
-          else this._current = {startAngle:d.endAngle, endAngle:d.endAngle}
-        })
-        .merge(slices)
-        .transition()
-        .duration(this.options.transitionTime)
-        .attrTween("d", arcTween)
-        .attr("fill", function(d, i) {return color(i)})
-
-      slices.exit().remove();
-
-      function arcTween(a) {
-        var i = d3.interpolate(this._current, a);
-        this._current = i(0);
-        return function(t) {
-          return arc(i(t));
-        };
-      }
-
-      // Add labels if necessary
-      if (labels) {
-        // Label colors
-        if (this.options.labelColor == "auto") {
-          labelColor = function(i) {
-            return tinycolor.mostReadable(color(i), ["white", "black"])._originalInput
-          }
-        } else {
-          labelColor = function(i) {return this.options.labelColor};
-        }
-
-        function labelPositionAndSize(el, options, scale, arc, d, i, data) {
-          var bbox = el._text.node().getBBox();
-          var ratio = bbox.height / bbox.width;
-          el._width = bbox.width;
-
-          if (data.length > 1) {
-            // chart is a pie of polar chart.
-            var c = arc.centroid(d)
-            el._x = c[0];
-            el._y = c[1];
-
-            // Get maximal scale so that label fits in the slice.
-            var diag1 = new g.Line(c[1] - ratio * c[0], ratio);
-            var diag2 = new g.Line(c[1] + ratio * c[0], -ratio);
-            var limit1 = new g.Line(0, Math.tan(d.startAngle + Math.PI/2));
-            var limit2 = new g.Line(0, Math.tan(d.endAngle + Math.PI/2));
-
-            // Get all intersection points
-            var intersects = [];
-            intersects = intersects.concat(g.intersectionOfTwoLines(diag1, limit1));
-            intersects = intersects.concat(g.intersectionOfTwoLines(diag1, limit2));
-            intersects = intersects.concat(g.intersectionLineAndCircle(diag1, scale(d.data)));
-            intersects = intersects.concat(g.intersectionOfTwoLines(diag2, limit1));
-            intersects = intersects.concat(g.intersectionOfTwoLines(diag2, limit2));
-            intersects = intersects.concat(g.intersectionLineAndCircle(diag2, scale(d.data)));
-
-            // Compute distance between all these points and take the minimum
-            var center = new g.Point(c[0], c[1]);
-            var distances = intersects.map(function(x) {return g.distance(center, x)});
-            var minDist = d3.min(distances);
-            var actualDist = Math.sqrt( Math.pow(bbox.height / 2, 2) + Math.pow(bbox.width / 2, 2));
-
-            el._scale = minDist / actualDist;
-          } else {
-            // Chart is a bubble chart.
-            // Put the label at the center and scale it to fit the circle
-            el._x = 0;
-            el._y = 0;
-
-            var maxHeight = scale(d.data) * 2 * Math.cos(Math.PI/2 - Math.atan(ratio))
-            el._scale =  maxHeight / bbox.height;
-          }
-          if (isNaN(el._scale) || !isFinite(el._scale) || bbox.height * el._scale < options.labelMinSize) {
-            el._scale = 0;
-          }
-          if (bbox.height * el._scale > options.labelMaxSize) {
-            el._scale = options.labelMaxSize / bbox.height;
-          }
-        }
-
-        var self = this;
-        var labelsEl = this._chart.selectAll(".labels-container").data(pie(data));
-        labelsEl.enter()
-          .append("g")
-          .attr("class", "labels-container")
-          .each(function(d, i) {
-            addOneLabel(this, self.options, labelColor(i));
-            this._text.text(labels[i]);
-            labelPositionAndSize(this, self.options, scale, arc, d, i, data);
-            this._container.attr("transform", "translate(" + this._x + "," + this._y + ")");
-            this._label.attr("transform", "scale(" + this._scale + ")");
-          })
-
-          .merge(labelsEl)
-          .each(function(d, i) {
-            var oldWidth = this._width;
-            var oldScale = this._scale;
-            this._text.text(labels[i]);
-            this._text.attr("fill", labelColor(i));
-            labelPositionAndSize(this, self.options, scale, arc, d, i, data);
-            this._label
-              .attr("transform", "scale(" + Math.min(oldScale, oldWidth * oldScale / this._width) + ")")
-              .transition()
-              .duration(self.options.transitionTime)
-              .attr("transform", "scale(" + this._scale + ")");
-          })
-          .transition()
-          .duration(self.options.transitionTime)
-          .attr("transform", function(d, i) {
-            return "translate(" + this._x + "," + this._y + ")";
-          });
-
-        labelsEl.exit().remove();
-      } else {
-        this._chart.selectAll("text").remove();
-      }
+        .duration(opts.transitionTime)
+        .attr("opacity", opts.opacity);
+      this._polarchart.update(data, opts);
     }
   });
 

@@ -68,6 +68,7 @@
       })
     // Update slices
       .merge(slices)
+      .attr("class", function(d, i) {return self._options.shapeClass(d.data, i)})
       .transition()
       .duration(self._options.transitionTime)
       .attrTween("d", arcTween)
