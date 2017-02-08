@@ -4,12 +4,14 @@
   var d3 = require("d3");
   var tinycolor = require("tinycolor2");
   var utils = require("./utils.js");
-  var prettyNumbers = require("../prettyNumbers.js");
   var Label = require("./label.js")
 
   module.exports = Chart;
 
   function Chart(el, data, options, defaults) {
+    this._data = data;
+
+    // Merge options with default options of this class and of the child class
     this._options = {
       width:60,
       height: 60,
@@ -20,10 +22,9 @@
       labelClass: "",
       shapeClass: ""
     };
-
     this._options = utils.mergeOptions(this._options, defaults || {});
     this._options = this._processOptions(options);
-    this._data = data;
+
     this._container = d3.select(el).append("svg");
     this._chart = this._container.append("g");
   }
@@ -65,7 +66,7 @@
     if (options.labels === "none") {
       options.labelText = null;
     } else if (options.labels === "auto") {
-      options.labelText = utils.toFunction(prettyNumbers(this._data));
+      options.labelText = utils.toFunction(utils.prettyNumbers(this._data));
     }  else {
       options.labelText = utils.toFunction(options.labels);
     }

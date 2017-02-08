@@ -23,19 +23,29 @@
 
     options.height = options.width;
 
+    if (options.maxValue === "auto") {
+      var max = options.minValue === "auto"? d3.min(data): options.minValue;
+      var max = d3.max(data);
+
+      if (max < 0 && min < 0) options.maxValue = 0;
+      else options.maxValue = max;
+    }
+
     var radius = options.width / 2;
     var pie = d3.pie().sort(null);
     var arc = d3.arc().innerRadius(0);
     var radiusFun;
 
-    if (options.type === "pie") {
+    if (options.type === "angle") {
       radiusFun = function(d) {return radius}
       pie.value(function(d) {return d});
     } else {
       radiusFun = options.type == "radius" ? d3.scaleLinear() : d3.scalePow().exponent(0.5);
-      radiusFun.range([0, radius]);
+      radiusFun.range([0, radius])
+        .domain([0, options.maxValue]);
       pie.value(function(d) {return 1});
     }
+    
     arc.outerRadius(function(d, i) {return radiusFun(d.data)});
 
     options.radius = radiusFun;

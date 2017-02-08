@@ -2,7 +2,7 @@
   'use strict';
 
   var d3 = require("d3");
-  var g = require("../geometry.js")
+  var g = require("./geometry.js")
 
   module.exports = Label;
 
