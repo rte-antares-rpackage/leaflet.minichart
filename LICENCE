@@ -1,4 +1,4 @@
-leaflet.d3chart: A leaflet plugin to embded charts on a leaflet map
+leaflet.minichart: A leaflet plugin to embded charts on a leaflet map
 Copyright © 2016 RTE Réseau de transport d’électricité
 
 This program is free software; you can redistribute it and/or
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 
-The leaflet.d3chart library includes code of other open-source libraries (full
+The leaflet.minichart library includes code of other open-source libraries (full
 copies of the license agreements used by these components are included below):
 
 - d3, https://github.com/d3/d3

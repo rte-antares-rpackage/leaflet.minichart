@@ -4,10 +4,10 @@
   var minicharts = require("minicharts");
   var utils = require("./utils.js");
 
-  L.D3chart = L.CircleMarker.extend({
-    /** Options used to initialize/update a D3chart object.
-      * @typedef {object} D3chartOptions
-      * @memberOf 'L.D3chart'
+  L.Minichart = L.CircleMarker.extend({
+    /** Options used to initialize/update a Minichart object.
+      * @typedef {object} MinichartOptions
+      * @memberOf 'L.Minichart'
       * @prop {string} [type = "bar"]
       * Type of chart to create. Possible values are "bar" for barcharts, "pie"
       * for pie charts, "polar-radius" and "polar-area" for polar area charts
@@ -72,18 +72,18 @@
     },
 
     /**
-      * @class 'L.D3chart'
+      * @class 'L.Minichart'
       * @summary add add bar, pie and polar charts to a leaflet map
-      * @desc L.D3chart is used to add dynamic charts on a leaflet map. It is specially
+      * @desc L.Minichart is used to add dynamic charts on a leaflet map. It is specially
       * useful to represent multiple data values associated to some geographical
       * coordinates.
       *
       * @example
       *
-      * L.d3chart([0, 0], {data: [1, 2, 3], maxValues: 3})
+      * L.minichart([0, 0], {data: [1, 2, 3], maxValues: 3})
       *
       * @param {L.Point} center
-      * @param {D3chartOptions} options - Object containing
+      * @param {MinichartOptions} options - Object containing
       * options to construct a chart.
       */
     initialize: function(center, options) {
@@ -115,12 +115,12 @@
       map.off('viewreset', this._redraw, this);
     },
 
-    /** Update the options of a D3chart object.
+    /** Update the options of a minichart object.
       * @method setOptions
       * @instance
-      * @memberOf 'L.D3chart'
+      * @memberOf 'L.Minichart'
       *
-      * @param {D3chartOptions} options - Object containing options to update the chart.
+      * @param {MinichartOptions} options - Object containing options to update the chart.
       */
     setOptions: function(options) {
       var newChart = options.type && options.type != this.options.type;
@@ -228,7 +228,7 @@
     }
   });
 
-  L.d3chart = function(center, options) {
-  return new L.D3chart(center, options);
+  L.minichart = function(center, options) {
+  return new L.Minichart(center, options);
 };
 })();

@@ -1,20 +1,20 @@
-# Leaflet.d3chart
+# Leaflet.minichart
 
-Leaflet.d3chart is a leaflet plugin for adding to a leaflet map small animated bar charts, pie charts or polar area charts.
+Leaflet.minichart is a leaflet plugin for adding to a leaflet map small animated bar charts, pie charts or polar area charts.
 
 It can be used to visualize multiple variables associated to geographical coordinates and to look at the evolution of these variables.
 
 ## Usage
 
-You need to include the `leaflet` CSS and javascript files and then the `leaflet.d3chart` javascript file in the head section of your document:
+You need to include the `leaflet` CSS and javascript files and then the `leaflet.minichart` javascript file in the head section of your document:
 
 ``` xml
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" media="screen" title="leaflet">
 <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js" charset="utf-8"></script>
-<script src="https://unpkg.com/leaflet.d3chart@0.1.3/dist/leaflet.d3chart.min.js" charset="utf-8"></script>
+<script src="https://unpkg.com/leaflet.minichart@0.1.3/dist/leaflet.minichart.min.js" charset="utf-8"></script>
 ```
 
-Once these files included, you can create charts with function `L.d3chart()`. All parameters are described [here](https://rte-antares-rpackage.github.io/leaflet.d3chart/-_L.D3chart_.html).
+Once these files included, you can create charts with function `L.minichart()`. All parameters are described [here](https://rte-antares-rpackage.github.io/leaflet.minichart/-_L.minichart_.html).
 
 ## Example
 
@@ -32,7 +32,7 @@ function fakeData() {
 }
 
 // Create a barchart
-var myBarChart = L.d3chart(center, {data: fakeData()});
+var myBarChart = L.minichart(center, {data: fakeData()});
 mymap.addLayer(myBarChart);
 
 // Update data every 2 seconds
@@ -44,4 +44,4 @@ setInterval(function() {
 ![Example of a barchart on a map](img/example_barchart.gif)
 
 You can find more complete examples here:
-* [International comparison of PISA scores](https://rte-antares-rpackage.github.io/leaflet.d3chart/tutorial-PISA%20scores.html)
+* [International comparison of PISA scores](https://rte-antares-rpackage.github.io/leaflet.minichart/tutorial-PISA%20scores.html)

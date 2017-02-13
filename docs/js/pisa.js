@@ -170,7 +170,7 @@ function initMap(id, options) {
         d.reading - avgScores.reading,
         d.science - avgScores.science
       ];
-      charts[d.country] = L.d3chart([d.lat, d.lon], {data: scoresDiff, maxValues: 90});
+      charts[d.country] = L.minichart([d.lat, d.lon], {data: scoresDiff, maxValues: 90});
       mymap.addLayer(charts[d.country]);
       if (options) {
         charts[d.country].setOptions(options);

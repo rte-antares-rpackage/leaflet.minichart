@@ -34,7 +34,7 @@ var indexUrl = helper.getUniqueFilename('index');
 var navOptions = {
   includeDate: conf.includeDate !== false,
   logoFile: conf.logoFile,
-  systemName: conf.systemName || "leaflet.d3chart",
+  systemName: conf.systemName || "leaflet.minichart",
   navType: conf.navType || "vertical",
   footer: conf.footer || "",
   copyright: conf.copyright || "",

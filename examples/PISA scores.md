@@ -1,6 +1,6 @@
 The [Program for International Student Assesment (PISA)](https://en.wikipedia.org/wiki/Programme_for_International_Student_Assessment) is an international study conducted by the OECD. It measures the evolution of the performance of 15 years old pupils on mathematics, science and reading in different countries.
 
-This document demonstrates how to use the `leaflet.d3chart` plugin to represent over a leaflet map the scores of the pupils of the different countries.
+This document demonstrates how to use the `leaflet.minichart` plugin to represent over a leaflet map the scores of the pupils of the different countries.
 
 ## Data
 
@@ -23,13 +23,13 @@ var avgScores = {math: 493.4, reading: 492.7, science: 498.2};
 
 ## Initialisation of the map
 
-In the header of our html file we include `leaflet` and the `leaflet.d3chart` plugin:
+In the header of our html file we include `leaflet` and the `leaflet.minichart` plugin:
 
 ```xml
 <link rel="stylesheet" href="https://unpkg.com/leaflet@0.7.3/dist/leaflet.css" media="screen" title="leaflet">
 <script src="https://unpkg.com/leaflet@0.7.3/dist/leaflet.js" charset="utf-8"></script>
-<script src="../dist/leaflet.d3chart.min.js" charset="utf-8"></script>
-<script src="https://unpkg.com/leaflet.d3chart@0.1.3/dist/leaflet.d3chart.min.js" charset="utf-8"></script>
+<script src="../dist/leaflet.minichart.min.js" charset="utf-8"></script>
+<script src="https://unpkg.com/leaflet.minichart@0.1.3/dist/leaflet.minichart.min.js" charset="utf-8"></script>
 ```
 
 We also add a div that will contain the leaflet map:
@@ -45,7 +45,7 @@ var tiles = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Can
 tiles.addTo(mymap);
 ```
 
-We now want to add to the map barcharts that represent the deviance to the mean of the three scores for year 2015. To do so, we loop over our data and create a `d3charts` object for each country. We store
+We now want to add to the map barcharts that represent the deviance to the mean of the three scores for year 2015. To do so, we loop over our data and create a `minicharts` object for each country. We store
 store them in an array so we will be able to update them later.
 
 ```javascript
@@ -59,7 +59,7 @@ for (var i = 0; i < data.length; i++) {
       d.reading - avgScores.reading,
       d.science - avgScores.science
     ];
-    charts[d.country] = L.d3chart([d.lat, d.lon], {data: scoresDiff, maxValues: 90});
+    charts[d.country] = L.minichart([d.lat, d.lon], {data: scoresDiff, maxValues: 90});
     mymap.addLayer(charts[d.country] ) ;
   }
 }
@@ -67,9 +67,9 @@ for (var i = 0; i < data.length; i++) {
 
 <div id="map0" style="width:100%;height:400px;margin-bottom:20px;"></div>
 
-We can improve our map by passing some additional options to `L.d3chart` to reduce the size of the charts and use prettier colors:
+We can improve our map by passing some additional options to `L.minichart` to reduce the size of the charts and use prettier colors:
 ```javascript
-charts[d.country] = L.d3chart(
+charts[d.country] = L.minichart(
   [d.lat, d.lon],
   {
     data: scoresDiff,
@@ -124,5 +124,5 @@ Here is the final result:
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@0.7.3/dist/leaflet.css" media="screen" title="leaflet">
 <script src="https://unpkg.com/leaflet@0.7.3/dist/leaflet.js" charset="utf-8"></script>
-<script src="leaflet.d3chart.min.js" charset="utf-8"></script>
+<script src="leaflet.minichart.min.js" charset="utf-8"></script>
 <script type="text/javascript" src = "js/pisa.js"></script>
