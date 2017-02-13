@@ -1,8 +1,8 @@
 // Copyright © 2016 RTE Réseau de transport d’électricité
 (function() {
   var d3 = require("d3");
-  var tinycharts = require("./tinycharts/tinycharts.js");
-  var utils = require("./tinycharts/utils.js");
+  var minicharts = require("minicharts");
+  var utils = require("./utils.js");
 
   L.D3chart = L.CircleMarker.extend({
     /** Options used to initialize/update a D3chart object.
@@ -185,17 +185,17 @@
       var generator, type;
       switch(this.options.type) {
         case "bar":
-          generator = tinycharts.Barchart;
+          generator = minicharts.Barchart;
           break;
         case "pie":
-          generator = tinycharts.Piechart;
+          generator = minicharts.Piechart;
           break;
         case "polar-radius":
-          generator = tinycharts.Polarchart;
+          generator = minicharts.Polarchart;
           type = "radius";
           break;
         case "polar-area":
-          generator = tinycharts.Polarchart;
+          generator = minicharts.Polarchart;
           type = "area";
           break;
       }

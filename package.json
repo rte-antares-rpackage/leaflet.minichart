@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Francois Guillem",
-  "license": "GPL (>= 2)",
+  "license": "GPL-2.0+",
   "dependencies": {
     "d3": "^4.4.0",
     "tinycolor2": "^1.4.1"
@@ -18,6 +18,11 @@
     "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-uglify": "^2.0.0",
     "grunt-contrib-watch": "^1.0.0",
-    "grunt-jsdoc": "^2.1.0"
+    "grunt-jsdoc": "^2.1.0",
+    "minicharts": "^0.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rte-antares-rpackage/leaflet.minichart.git"
   }
 }

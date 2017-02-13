@@ -6,9 +6,14 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     browserify: {
+      options: {
+        browserifyOptions : {
+          debug: true
+        }
+      },
       dist: {
         files: {
-          "dist/leaflet.d3chart.js": ["src/d3chart.js"]
+          "dist/leaflet.minichart.js": ["src/minichart.js"]
         }
       }
     },
@@ -18,8 +23,8 @@ module.exports = function(grunt) {
                 'Copyright © 2016 RTE Réseau de transport d’électricité */\n'
       },
       build: {
-        src: 'dist/leaflet.d3chart.js',
-        dest: 'dist/leaflet.d3chart.min.js'
+        src: 'dist/leaflet.minichart.js',
+        dest: 'dist/leaflet.minichart.min.js'
       }
     },
     jsdoc: {
