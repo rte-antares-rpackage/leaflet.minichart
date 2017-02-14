@@ -356,6 +356,9 @@
             
                 
 <span class="param-type">Array.&lt;number></span>
+|
+
+<span class="param-type">"auto"</span>
 
 
 
@@ -365,47 +368,19 @@
             
                 <td class="default">
                 
-                    [1]
+                    "auto"
                 
                 </td>
             
 
-            <td class="description last">maximal absolute value the data could take. It can be a single numericvalue or an array of values with same length as data. In the first case,all values will be represented with the same scale while in the secondcase, each value will have its own scale. This is useful when one wantsto represent multiple variables that are not comparable.</td>
+            <td class="description last">maximal absolute value the data could take. It can be a single numericvalue or an array of values with same length as data. In the first case,all values will be represented with the same scale while in the secondcase, each value will have its own scale. This is useful when one wantsto represent multiple variables that are not comparable. If it equals to"auto" (the default) then the maximum absolute value in data is used.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>fillColor</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    #4281e5
-                
-                </td>
-            
-
-            <td class="description last">Color used to fill the shape when data contains only one value.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>colorPalette</code></td>
+                <td class="name"><code>colors</code></td>
             
 
             <td class="type">
@@ -426,7 +401,7 @@
                 </td>
             
 
-            <td class="description last">Array of colors used to fill each part of the chart representing onevalue of data.</td>
+            <td class="description last">Array of colors. If itslength is less than the length of data, colors are recycled.</td>
         </tr>
 
     
@@ -489,13 +464,19 @@
 
         <tr>
             
-                <td class="name"><code>opacity</code></td>
+                <td class="name"><code>labels</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">Array.&lt;string></span>
+|
+
+<span class="param-type">"none"</span>
+|
+
+<span class="param-type">"auto"</span>
 
 
 
@@ -505,68 +486,12 @@
             
                 <td class="default">
                 
-                    1
+                    "none"
                 
                 </td>
             
 
-            <td class="description last">Opacity of the chart.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>showLabels</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">Should values be displayed in the charts?</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>labelStyle</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    "font-family:sans-serif"
-                
-                </td>
-            
-
-            <td class="description last">CSS style to apply to labels</td>
+            <td class="description last">Labels to display on the chart. If it equals to "auto" then data valuesare displayed in a compact way.</td>
         </tr>
 
     
@@ -622,7 +547,7 @@
                 </td>
             
 
-            <td class="description last">Maximal height of labels.</td>
+            <td class="description last">Maximal height of labels in pixels.</td>
         </tr>
 
     
@@ -657,6 +582,34 @@
 
         <tr>
             
+                <td class="name"><code>labelStyle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                    "font-family:sans-serif"
+                
+                </td>
+            
+
+            <td class="description last">CSS style to apply to labels</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>labelColor</code></td>
             
 
@@ -679,37 +632,6 @@
             
 
             <td class="description last">Color to apply to labels. If "auto", text will be black or whitedepending on the background color.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>labelText</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;string></span>
-|
-
-<span class="param-type">null</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">Labels to display. It must have same length as data or be null. In thelast case, data values are used as labels.</td>
         </tr>
 
     
@@ -966,7 +888,7 @@
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a>
 	
-		on 2017-02-14T09:57:48+01:00
+		on 2017-02-14T11:32:08+01:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

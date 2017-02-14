@@ -15,40 +15,34 @@
       * slices.
       * @prop {number[]} [data = [1]]
       * Data values the chart has to represent.
-      * @prop {number[]} [maxValues = [1]]
+      * @prop {number[]|"auto"} [maxValues = "auto"]
       * maximal absolute value the data could take. It can be a single numeric
       * value or an array of values with same length as data. In the first case,
       * all values will be represented with the same scale while in the second
       * case, each value will have its own scale. This is useful when one wants
-      * to represent multiple variables that are not comparable.
-      * @prop {string} [fillColor=#4281e5]
-      * Color used to fill the shape when data contains only one value.
-      * @prop {string[]} [colorPalette=d3.schemeCategory10]
-      * Array of colors used to fill each part of the chart representing one
-      * value of data.
+      * to represent multiple variables that are not comparable. If it equals to
+      * "auto" (the default) then the maximum absolute value in data is used.
+      * @prop {string[]} [colors=d3.schemeCategory10] Array of colors. If its
+      * length is less than the length of data, colors are recycled.
       * @prop {number} [width=60]
       * Width of the chart when `type` equals 'bar' or maximal diameter of the
       * chart for all other types.
       * @prop {number} [height=60]
       * Maximal height of barcharts.
-      * @prop {number} [opacity=1]
-      * Opacity of the chart.
-      * @prop {boolean} [showLabels=false]
-      * Should values be displayed in the charts?
-      * @prop {string} [labelStyle="font-family:sans-serif"]
-      * CSS style to apply to labels
+      * @prop {string[]|"none"|"auto"}[labels="none"]
+      * Labels to display on the chart. If it equals to "auto" then data values
+      * are displayed in a compact way.
       * @prop {number} [labelMinSize=8]
       * Labels are automatically hidden if the label height is less than this number.
       * @prop {number} [labelMaxSize=24]
-      * Maximal height of labels.
+      * Maximal height of labels in pixels.
       * @prop {number} [labelPadding=2]
       * Padding to apply to labels.
+      * @prop {string} [labelStyle="font-family:sans-serif"]
+      * CSS style to apply to labels
       * @prop {string} [labelColor="auto"]
       * Color to apply to labels. If "auto", text will be black or white
       * depending on the background color.
-      * @prop {string[]|null} [labelText=null]
-      * Labels to display. It must have same length as data or be null. In the
-      * last case, data values are used as labels.
       * @prop {number} [transitionTime=750]
       * Duration in millisecondq of transitions.
       *
@@ -58,7 +52,6 @@
       data: [1],
       maxValue: "auto",
       colors: d3.schemeCategory10,
-      opacity: 1,
       width: 60,
       height: 60,
       opacity: 1,
@@ -67,8 +60,8 @@
       labelMaxSize: 24,
       labelPadding: 2,
       labelColor: "auto",
-      transitionTime: 750,
       labelStyle: "font-family:sans-serif",
+      transitionTime: 750
     },
 
     /**
