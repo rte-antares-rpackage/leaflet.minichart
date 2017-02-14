@@ -1,8 +1,8 @@
 {
   "name": "leaflet.minichart",
-  "version": "0.1.3",
+  "version": "0.2",
   "description": "A leaflet plugin to add animated charts to a map",
-  "main": "dist/leaflet.minichart.js",
+  "main": "src/leaflet.minichart.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,6 +19,7 @@
     "grunt-contrib-uglify": "^2.0.0",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-jsdoc": "^2.1.0",
+    "ink-docstrap": "^1.3.0",
     "minicharts": "^0.1.1"
   },
   "repository": {
