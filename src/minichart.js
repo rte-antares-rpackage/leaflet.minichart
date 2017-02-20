@@ -124,8 +124,14 @@
     _redraw: function(newChart) {
       // Move container on the map
       var c = this._map.latLngToLayerPoint(this._center);
+      var h;
+      if (this.options.type == "bar") {
+        h = this.options.height * 2;
+      } else {
+        h = this.options.width;
+      }
       this._chart
-        .attr("transform", "translate(" + (c.x - this.options.width / 2) + "," + (c.y - this.options.height / 2) + ")")
+        .attr("transform", "translate(" + (c.x - this.options.width / 2) + "," + (c.y - h / 2) + ")")
         .transition()
         .duration(this.options.transitionTime)
         .attr("opacity", this.options.opacity);
