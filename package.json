@@ -1,6 +1,6 @@
 {
   "name": "leaflet.minichart",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A leaflet plugin to add animated charts to a map",
   "main": "src/leaflet.minichart.js",
   "scripts": {
