@@ -146,7 +146,7 @@ var avgScores = {math: 493.4, reading: 492.7, science: 498.2};
 var niceOptions = {
   width:40,
   height:40,
-  colorPalette: ["#7A8B99", "#91ADC2", "#A9DDD6"]
+  colors: ["#7A8B99", "#91ADC2", "#A9DDD6"]
 }
 
 // Initialize maps.
@@ -160,12 +160,13 @@ function initMap(id, options) {
   var tiles = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}');
   tiles.addTo(mymap);
   var charts = {};
+  var d, scoresDiff;
 
   for (var i = 0; i < data.length; i++) {
-    var d = data[i];
+    d = data[i];
 
     if (d.year == 2015) {
-      var scoresDiff = [
+      scoresDiff = [
         d.math - avgScores.math,
         d.reading - avgScores.reading,
         d.science - avgScores.science

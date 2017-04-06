@@ -75,7 +75,7 @@ charts[d.country] = L.minichart(
     data: scoresDiff,
     maxValues: 90,
     width:40, height:40,
-    colorPalette: ["#7A8B99", "#91ADC2", "#A9DDD6"]
+    colors: ["#7A8B99", "#91ADC2", "#A9DDD6"]
   }
 );
 ```
