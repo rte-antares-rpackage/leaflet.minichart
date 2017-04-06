@@ -173,11 +173,6 @@
       var labels = this.options.labels;
       if (labels === "auto") {
         labels = utils.prettyNumbers(data);
-      } else if (labels != "none") {
-        labelFun = utils.toFunction(labels);
-        labels = function(d, i) {
-          labelFun(data[i], i);
-        }
       }
 
       // Generator function

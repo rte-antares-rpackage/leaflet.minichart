@@ -9,7 +9,8 @@
   }
 
   function mergeOptions(options, defaults) {
-    options = options || {};
+    if (options) options = JSON.parse(JSON.stringify(options));
+    else options = {};
     defaults = defaults || {};
     for (var opt in defaults) {
       if (defaults.hasOwnProperty(opt) && !options.hasOwnProperty(opt)) {
@@ -36,7 +37,7 @@
     var absVal = Math.abs(number);
     var sign= number < 0? "-": "";
     var scale;
-    
+
     if( absVal < 1000 ) {
         scale = '';
     } else if( absVal < 1000000 ) {
