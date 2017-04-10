@@ -50,7 +50,7 @@
     options: {
       type: "bar",
       data: [1],
-      maxValue: "auto",
+      maxValues: "auto",
       colors: d3.schemeCategory10,
       width: 60,
       height: 60,
@@ -81,6 +81,7 @@
       */
     initialize: function(center, options) {
       this._center = center;
+      this._zoom = 0;
       this.options = utils.mergeOptions(options, this.options);
       L.CircleMarker.prototype.initialize.call(
         this,
@@ -98,14 +99,21 @@
       // create the svg element that holds the chart
       this._chart = d3.select(container).append("g");
 
-      map.on('viewreset', this._redraw, this);
+      map.on('moveend', this._onMoveend, this);
       this._redraw(true);
     },
 
     onRemove: function() {
       // remove layer's DOM elements and listeners
       L.CircleMarker.prototype.onRemove.call(this, map);
-      map.off('viewreset', this._redraw, this);
+      map.off('moveend', this._onMoveend, this);
+    },
+
+    _onMoveend: function() {
+      // Redraw chart only if zoom has changed
+      var oldZoom = this._zoom;
+      this._zoom = this._map.getZoom();
+      if (oldZoom != this._zoom) this._redraw() ;
     },
 
     /** Update the options of a minichart object.
