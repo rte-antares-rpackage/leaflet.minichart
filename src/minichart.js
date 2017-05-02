@@ -102,7 +102,7 @@
       this._redraw(true);
     },
 
-    onRemove: function() {
+    onRemove: function(map) {
       // remove layer's DOM elements and listeners
       L.CircleMarker.prototype.onRemove.call(this, map);
       map.off('viewreset', this._redraw, this);
