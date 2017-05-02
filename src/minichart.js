@@ -93,13 +93,16 @@
     onAdd: function(map) {
       L.CircleMarker.prototype.onAdd.call(this, map);
       // Change class of container so that the element hides when zooming
-      var container = this._container || this._renderer._container;
+      var container = this._container || this._renderer._rootGroup;
       container.setAttribute("class", "leaflet-zoom-hide");
 
       // create the svg element that holds the chart
       this._chart = d3.select(container).append("g");
 
+      if (L.version >= "1.0") this.addInteractiveTarget(this._chart.node());
+
       map.on('moveend', this._onMoveend, this);
+
       this._redraw(true);
     },
 
@@ -216,8 +219,8 @@
         labelMinSize: this.options.labelMinSize,
         labelMaxSize: this.options.labelMaxSize,
         labelPadding: this.options.labelPadding,
-        labelClass: "leaflet-clickable",
-        shapeClass: "leaflet-clickable"
+        labelClass: "leaflet-clickable leaflet-interactive",
+        shapeClass: "leaflet-clickable leaflet-interactive"
       };
 
       // Create of update chart
