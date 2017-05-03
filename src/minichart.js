@@ -83,6 +83,8 @@
       this._center = center;
       this._zoom = 0;
       this.options = utils.mergeOptions(options, this.options);
+      this._setMaxValue();
+
       L.CircleMarker.prototype.initialize.call(
         this,
         center,
@@ -129,7 +131,38 @@
     setOptions: function(options) {
       var newChart = options.type && options.type != this.options.type;
       this.options = utils.mergeOptions(options, this.options);
+      this._setMaxValue();
       this._redraw(newChart);
+    },
+
+    _setMaxValue: function() {
+      // Max absolute value for each variable
+      var max = this.options.maxValues;
+      var data = utils.toArray(this.options.data);
+      if (max === "auto") {
+        max = Math.max(
+          d3.max(data),
+          Math.abs(d3.min(data))
+        )
+        if (max == 0) max = 1;
+      }
+
+      max = utils.toArray(max);
+
+      if(max.length !== 1 && max.length != data.length) {
+        throw new Error("'maxValues' should be a single number or have same length as 'data'");
+      }
+
+      for (var i = 0; i < data.length; i++) {
+        if (Math.abs(data[i]) > max[i % max.length]) {
+          console.warn("Some data values are greater than 'maxValues'." +
+                       " Chart will be truncated. You should set option 'maxValues'" +
+                       " to avoid this problem.");
+          break;
+        }
+      }
+
+      this.options.maxValues = max;
     },
 
     _redraw: function(newChart) {
@@ -153,21 +186,7 @@
       for (var i = 0; i < data.length; i++) {
         if (isNaN(data[i]) || !isFinite(data[i])) data[i] = 0;
       }
-
-      // Max absolute value for each variable
       var max = this.options.maxValues;
-      if (max === "auto") {
-        max = Math.max(
-          d3.max(data),
-          Math.abs(d3.min(data))
-        )
-      }
-      max = utils.toArray(max);
-
-      if(max.length !== 1 && max.length != data.length) {
-        throw new Error("'maxValues' should be a single number or have same length as 'data'");
-      }
-
       // Scale data. This step is essential to have different scales for each
       // variable. Only relevant if chart is not a pie/
       var dataScaled = [];

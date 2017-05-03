@@ -1,3 +1,9 @@
+# leaflet.minichart V0.2.4 (XXXX-XX-XX)
+
+## Bugfixes
+* Charts had buggy behavior if all data values were equal to 0 at some point. (#5)
+* Charts were not firing mouse events with leaflet>= 1.0. (#2)
+
 # leaflet.minichart V0.2.3 (2017-05-02)
 
 ## Bugfixes
