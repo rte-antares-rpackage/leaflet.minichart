@@ -4,6 +4,14 @@ Leaflet.minichart is a leaflet plugin for adding to a leaflet map small animated
 
 It can be used to visualize multiple variables associated to geographical coordinates and to look at the evolution of these variables.
 
+Here are screenshots of some maps that use this plugin.
+
+![](img/piecharts.png)
+![](img/barcharts.png)
+![](img/bubblecharts.png)
+
+This plugin is also available as an [R package](https://github.com/rte-antares-rpackage/leaflet.minicharts).
+
 ## Usage
 
 You need to include the `leaflet` CSS and javascript files and then the `leaflet.minichart` javascript file in the head section of your document:
@@ -14,7 +22,7 @@ You need to include the `leaflet` CSS and javascript files and then the `leaflet
 <script src="https://unpkg.com/leaflet.minichart@0.2.0/dist/leaflet.minichart.min.js" charset="utf-8"></script>
 ```
 
-Once these files included, you can create charts with function `L.minichart()`. All parameters are described [here](https://rte-antares-rpackage.github.io/leaflet.minichart/-_L.minichart_.html).
+Once these files included, you can create charts with function `L.minichart()`. All parameters are described [here](https://rte-antares-rpackage.github.io/leaflet.minichart/-_L.Minichart_.html).
 
 ## Example
 
@@ -28,7 +36,7 @@ L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mymap);
 
 // Let us generate fake data
 function fakeData() {
-  return [Math.Random(), Math.random(), Math.random()];
+  return [Math.random(), Math.random(), Math.random()];
 }
 
 // Create a barchart
