@@ -19,7 +19,7 @@ You need to include the `leaflet` CSS and javascript files and then the `leaflet
 ``` xml
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" media="screen" title="leaflet">
 <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js" charset="utf-8"></script>
-<script src="https://unpkg.com/leaflet.minichart@0.2.0/dist/leaflet.minichart.min.js" charset="utf-8"></script>
+<script src="https://unpkg.com/leaflet.minichart/dist/leaflet.minichart.min.js" charset="utf-8"></script>
 ```
 
 Once these files included, you can create charts with function `L.minichart()`. All parameters are described [here](https://rte-antares-rpackage.github.io/leaflet.minichart/-_L.Minichart_.html).
