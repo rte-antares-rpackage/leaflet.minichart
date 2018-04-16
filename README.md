@@ -1,3 +1,5 @@
+[![NPM](https://nodei.co/npm/leaflet.minichart.png)](https://nodei.co/npm/leaflet.minichart/)
+
 # Leaflet.minichart
 
 Leaflet.minichart is a leaflet plugin for adding to a leaflet map small animated bar charts, pie charts or polar area charts.
