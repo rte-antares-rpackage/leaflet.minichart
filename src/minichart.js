@@ -111,6 +111,7 @@
     onRemove: function(map) {
       // remove layer's DOM elements and listeners
       L.CircleMarker.prototype.onRemove.call(this, map);
+      this._chart.selectAll("*").remove();
       map.off('moveend', this._onMoveend, this);
     },
 
