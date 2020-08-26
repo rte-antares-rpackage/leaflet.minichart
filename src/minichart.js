@@ -133,7 +133,9 @@
       var newChart = options.type && options.type != this.options.type;
       this.options = utils.mergeOptions(options, this.options);
       this._setMaxValue();
-      this._redraw(newChart);
+      if (this._map) {
+        this._redraw(newChart);
+      }
     },
 
     _setMaxValue: function() {
